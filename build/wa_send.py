@@ -3,6 +3,7 @@
 import os
 import sys
 import time
+import urllib.request
 
 from playwright.sync_api import sync_playwright
 
@@ -10,8 +11,28 @@ PROFILE = "/tmp/opencode/whatsapp-profile"
 OUT = "/tmp/opencode/shots"
 os.makedirs(OUT, exist_ok=True)
 
-TUNNEL = sys.argv[1] if len(sys.argv) > 1 else \
-    "https://brass-would-cover-card.trycloudflare.com"
+
+def live_url():
+    """The address the tunnel is actually serving right now."""
+    for url in ("http://127.0.0.1:8080/live-url",
+                "http://127.0.0.1:8080/live-url.txt"):
+        try:
+            with urllib.request.urlopen(url, timeout=10) as r:
+                u = r.read().decode().strip()
+                if u.startswith("http"):
+                    return u
+        except Exception:
+            continue
+    p = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..",
+                     "live-url.txt")
+    if os.path.exists(p):
+        return open(p).read().strip()
+    return ""
+
+
+TUNNEL = sys.argv[1] if len(sys.argv) > 1 else live_url()
+if not TUNNEL:
+    sys.exit("no live tunnel url found (set one as argv[1])")
 GROUP = sys.argv[2] if len(sys.argv) > 2 else "Temp"
 MESSAGE = (
     "MATHEMATICA is live — the Unabridged Four-Volume Mathematical Treatise: "

@@ -34,7 +34,8 @@ def live_url():
                     return u
         except Exception:
             continue
-    p = "/projects/personal_development/live-url.txt"
+    p = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..",
+                     "live-url.txt")
     if os.path.exists(p):
         return open(p).read().strip()
     return ""

@@ -20,7 +20,7 @@ else:
         + secrets.token_urlsafe(14) + "!7"
     open(PASSFILE, "w").write(PASSWORD)
 os.makedirs(OUT, exist_ok=True)
-SITE = "/projects/personal_development"
+SITE = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
 with sync_playwright() as p:
     ctx = p.chromium.launch_persistent_context(

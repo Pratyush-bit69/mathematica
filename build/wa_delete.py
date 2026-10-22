@@ -87,5 +87,7 @@ with sync_playwright() as p:
     page.screenshot(path=f"{OUT}/wa-deleted.png")
     body = page.inner_text("body")
     print("stale still present:", STALE in body)
-    print("new present:", "shares-pepper-seasonal-rocket" in body)
+    print("a live tunnel link is present:",
+          "trycloudflare.com" in body or
+          "pratyush-bit69.github.io/mathematica" in body)
     ctx.close()

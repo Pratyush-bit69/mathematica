@@ -1,5 +1,6 @@
 # live tunnel address (machine-specific, changes when the tunnel restarts)
 /live-url.txt
+/.tunnel.pid
 
 # python
 __pycache__/

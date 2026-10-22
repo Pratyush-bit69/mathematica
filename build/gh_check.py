@@ -7,7 +7,7 @@ import time
 
 from playwright.sync_api import sync_playwright
 
-SRC = "/home/pratyushn/.config/BraveSoftware/Brave-Browser/Default"
+SRC = "/home/pratyush/.config/BraveSoftware/Brave-Browser/Default"
 DST = "/tmp/opencode/whatsapp-profile/Default"
 OUT = "/tmp/opencode/shots"
 os.makedirs(OUT, exist_ok=True)

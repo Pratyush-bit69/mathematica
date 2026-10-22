@@ -7,7 +7,7 @@ import os
 
 from playwright.sync_api import sync_playwright
 
-ROOT = "/projects/personal_development"
+ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 OUT = "/tmp/opencode/shots"
 os.makedirs(OUT, exist_ok=True)
 PORT = 8755

@@ -10,6 +10,7 @@ from playwright.sync_api import sync_playwright
 
 BASE = sys.argv[1] if len(sys.argv) > 1 else \
     "https://pratyush-bit69.github.io/mathematica"
+ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 OUT = "/tmp/opencode/shots"
 os.makedirs(OUT, exist_ok=True)
 PORT = 8771
@@ -26,7 +27,7 @@ def check(name, cond, detail=""):
 
 class H(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *a, **kw):
-        super().__init__(*a, directory="/tmp")
+        super().__init__(*a, directory=ROOT)
 
     def log_message(self, *a):
         pass

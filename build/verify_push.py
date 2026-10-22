@@ -5,10 +5,34 @@ import os
 import subprocess
 import sys
 
-TOKEN = open("/tmp/opencode/.gh-token").read().strip()
+
+def load_token():
+    """Read the GitHub token from the environment or the token file."""
+    tok = os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN")
+    if not tok:
+        try:
+            with open("/tmp/opencode/.gh-token") as fh:
+                tok = fh.read().strip()
+        except OSError:
+            tok = ""
+    if not tok:
+        sys.exit("no GitHub token: set GH_TOKEN, or write one to "
+                 "/tmp/opencode/.gh-token")
+    return tok
+
+
+TOKEN = load_token()
 API = "https://api.github.com/repos/Pratyush-bit69/mathematica"
 REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+TREATISE = os.path.join(REPO, "assets", "data", "treatise.js")
+# never let git stop and ask for a password on a terminal
+GIT_ENV = dict(os.environ, GIT_TERMINAL_PROMPT="0")
 fails = []
+
+
+def git(*args):
+    return subprocess.check_output(["git", "-C", REPO, *args], text=True,
+                                   env=GIT_ENV)
 
 
 def check(name, cond, detail=""):
@@ -33,19 +57,16 @@ check("default branch is main", repo.get("default_branch") == "main")
 print(f"        {repo.get('full_name')}  —  {repo.get('html_url')}")
 
 print("\n=== 2. working tree state ===")
-dirty = subprocess.check_output(
-    ["git", "-C", REPO, "status", "--porcelain"], text=True).strip()
+dirty = git("status", "--porcelain").strip()
 check("no uncommitted changes", dirty == "", dirty[:200])
 untracked = [l for l in dirty.splitlines() if l.startswith("??")]
 check("no untracked files", not untracked, untracked[:10])
-stashes = subprocess.check_output(["git", "-C", REPO, "stash", "list"], text=True).strip()
+stashes = git("stash", "list").strip()
 check("no stashes", stashes == "", stashes[:120])
 
 print("\n=== 3. refs ===")
-local_head = subprocess.check_output(
-    ["git", "-C", REPO, "rev-parse", "HEAD"], text=True).strip()
-remote = subprocess.check_output(
-    ["git", "-C", REPO, "ls-remote", "origin"], text=True).strip().splitlines()
+local_head = git("rev-parse", "HEAD").strip()
+remote = git("ls-remote", "origin").strip().splitlines()
 remote_heads = {l.split()[1]: l.split()[0] for l in remote if l.endswith("HEAD")}
 remote_main = [l.split()[0] for l in remote if l.split()[1] == "refs/heads/main"]
 check("origin/main == local HEAD",
@@ -61,8 +82,7 @@ if "tree" not in tree:
 else:
     rem = {e["path"]: e["sha"] for e in tree["tree"] if e["type"] == "blob"}
     loc = {}
-    for line in subprocess.check_output(
-            ["git", "-C", REPO, "ls-files", "-s"], text=True).splitlines():
+    for line in git("ls-files", "-s").splitlines():
         meta, path = line.split("\t", 1)
         loc[path] = meta.split()[1]
     missing = sorted(set(loc) - set(rem))
@@ -127,10 +147,14 @@ for path, expect in [("/", "MATHEMATICA"), ("/reader.html", "Reader"),
 try:
     with urllib.request.urlopen((pg.get("html_url") or "").rstrip("/")
                                 + "/assets/data/treatise.js", timeout=90) as r:
-        n = len(r.read())
-    check("live treatise.js complete", n == 1712487, f"{n} bytes")
+        live = r.read()
+    with open(TREATISE, "rb") as fh:
+        local = fh.read()
+    check("live treatise.js complete and byte-identical",
+          live == local,
+          f"live {len(live)} bytes / local {len(local)} bytes")
 except Exception as e:
-    check("live treatise.js complete", False, e)
+    check("live treatise.js complete and byte-identical", False, e)
 
 print()
 print("ALL VERIFIED" if not fails else f"{len(fails)} FAILURES: {fails}")

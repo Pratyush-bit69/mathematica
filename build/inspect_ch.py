@@ -1,7 +1,10 @@
 import json
+import os
 import sys
 
-d = open("../assets/data/treatise.js", encoding="utf-8").read()
+ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+d = open(os.path.join(ROOT, "assets", "data", "treatise.js"),
+         encoding="utf-8").read()
 o = json.loads(d[len("window.TREATISE = "):-2])
 
 cn = int(sys.argv[1]) if len(sys.argv) > 1 else 1

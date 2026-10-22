@@ -131,18 +131,36 @@ open index.html                   # data is plain JS, so file:// works
 
 ```bash
 pdftohtml -xml -noframes -i -hidden -q \
-  ~/Downloads/Unabridged_Mathematics_Treatise_Complete.pdf /tmp/mathpdf/doc
+  ~/Downloads/Unabridged_Mathematics_Treatise_Complete.pdf \
+  /tmp/opencode/mathpdf/doc
 python3 build/build.py            # → assets/data/treatise.js
 node build/validate_tex.js        # 100 % of formulas parse
 ```
 
+`build/build.py` reads the PDF from `~/Downloads/…`; override it with
+`MATHEMATICA_PDF=/path/to/file.pdf`. The `pdftohtml` extracts are cached in
+`/tmp/opencode/mathpdf/` (the same directory `build/pdfxml.py` and
+`build/extract.py` read), and `build.py` regenerates them automatically when
+they are missing.
+
 ### Tests
 
 ```bash
-python3 build/e2e.py          # 36 checks, all four pages, no console errors
+python3 build/e2e.py          # 37 checks, all four pages, no console errors
 python3 build/verify_push.py  # every blob SHA local vs remote + Pages + live site
 python3 build/verify_live.py  # drives a browser against the deployed URL
 ```
+
+`e2e.py` and `verify_live.py` need Playwright (`pip install playwright &&
+playwright install chromium`); `verify_live.py` also accepts a base URL, so the
+same checks can be run against the local tunnel:
+
+```bash
+python3 build/verify_live.py https://<your-tunnel>.trycloudflare.com
+```
+
+`verify_push.py` needs a GitHub token — it reads `GH_TOKEN` from the
+environment, falling back to `/tmp/opencode/.gh-token`.
 
 ### Deploying
 
@@ -192,9 +210,11 @@ Deep Learning, Stochastic Processes & Quantitative Finance.*
 ## Live tunnel
 
 ```bash
-./build/tunnel.sh          # supervised, self-restarting
-./build/tunnel.sh --daemon # background
+./build/tunnel.sh            # supervised, self-restarting (Ctrl-C stops it)
+./build/tunnel.sh --daemon   # background; pid in .tunnel.pid
+./build/tunnel.sh --stop     # stop the background daemon
 ```
 
 The current public address is written to `live-url.txt` and served by the
-local server at <http://127.0.0.1:8080/live-url>, so the link is never lost.
+local server at <http://127.0.0.1:8080/live-url> (and at
+<http://127.0.0.1:8080/live-url.txt>), so the link is never lost.

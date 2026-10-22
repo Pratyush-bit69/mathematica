@@ -15,7 +15,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
     def do_GET(self):
         # the current public tunnel address, so it is never lost
-        if self.path.rstrip("/") == "/live-url":
+        if self.path.rstrip("/") in ("/live-url", "/live-url.txt"):
             url = ""
             try:
                 with open(os.path.join(ROOT, "live-url.txt")) as fh:

@@ -12,7 +12,8 @@ from docbuild import (page_words, build_lines, build_blocks, line_runs,
                       WORKED_RE, EX_RE, EXAM_RE, TIER_RE, PAGE_CENTER)
 from extract import load_outline
 
-PDF = "/home/pratyushn/Downloads/Unabridged_Mathematics_Treatise_Complete.pdf"
+PDF = os.environ.get("MATHEMATICA_PDF") or os.path.expanduser(
+    "~/Downloads/Unabridged_Mathematics_Treatise_Complete.pdf")
 XML = "/tmp/opencode/mathpdf/doc.xml"
 OUT = os.path.join(os.path.dirname(__file__), "..", "assets", "data",
                    "treatise.js")
@@ -23,6 +24,10 @@ def ensure_inputs():
     """Regenerate the pdftohtml extracts if they are missing."""
     if os.path.exists(XML) and os.path.exists(os.path.join(WORK, "p13.html")):
         return
+    if not os.path.exists(PDF):
+        sys.exit(f"source PDF not found: {PDF}\n"
+                 f"set MATHEMATICA_PDF=/path/to/"
+                 f"Unabridged_Mathematics_Treatise_Complete.pdf")
     os.makedirs(WORK, exist_ok=True)
     import subprocess
     print("extracting PDF geometry …", flush=True)

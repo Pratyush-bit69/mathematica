@@ -9,7 +9,7 @@ from playwright.sync_api import sync_playwright
 
 PROFILE = "/tmp/opencode/whatsapp-profile"
 OUT = "/tmp/opencode/shots"
-SITE = "/projects/personal_development"
+SITE = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 os.makedirs(OUT, exist_ok=True)
 
 with sync_playwright() as p:
