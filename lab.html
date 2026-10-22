@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#05080f">
+<title>Math Lab — MATHEMATICA</title>
+<meta name="description" content="An interactive mathematics laboratory: function plotting with tangents and areas, Riemann integration, gradient descent, Black-Scholes option pricing, Monte Carlo and the central limit theorem, and 2×2 linear algebra.">
+<link rel="stylesheet" href="assets/fonts/fonts.css">
+<link rel="stylesheet" href="assets/katex/katex.min.css">
+<link rel="stylesheet" href="assets/css/main.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23f0b458'/%3E%3Ctext x='32' y='46' font-size='42' font-family='Georgia,serif' text-anchor='middle' fill='%230a0f1a'%3E%E2%88%AB%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="index.html">
+      <span class="brand-mark">&sum;</span>
+      <span><b>MATHEMATICA</b> <span>· Math Lab</span></span>
+    </a>
+    <nav class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="reader.html">Treatise</a>
+      <a href="glossary.html">Glossary</a>
+    </nav>
+    <div class="nav-tools">
+      <button class="search-trigger" data-search-open>
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg>
+        <span>Search</span><kbd>/</kbd>
+      </button>
+      <button class="icon-btn" data-theme-toggle aria-label="Toggle theme"><span data-theme-icon></span></button>
+    </div>
+  </div>
+</header>
+
+<section class="section-tight" style="padding-bottom:0;padding-top:calc(var(--nav-h) + 26px)">
+  <div class="wrap">
+    <div class="eyebrow">Interactive</div>
+    <h1 style="font-size:clamp(1.8rem,1.4rem+1.6vw,2.6rem);font-weight:400;margin-bottom:8px">
+      The Math Lab
+    </h1>
+    <p class="lede" style="max-width:64ch;margin-bottom:22px;font-size:1rem">
+      Six working instruments. Everything is computed live in your browser — no
+      server, no plotting service, no approximation of the approximation.
+    </p>
+    <div class="tabs" id="labTabs">
+      <button class="tab on" data-tab="plot">Function Plotter</button>
+      <button class="tab" data-tab="riemann">Riemann Sums</button>
+      <button class="tab" data-tab="descent">Gradient Descent</button>
+      <button class="tab" data-tab="option">Option Pricing</button>
+      <button class="tab" data-tab="prob">Probability &amp; CLT</button>
+      <button class="tab" data-tab="linalg">Linear Algebra</button>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:14px;padding-bottom:40px">
+  <div class="wrap">
+    <div class="lab-grid">
+
+      <!-- ------------------------------------------------------ PLOT -->
+      <div class="tabpane on" data-pane="plot">
+        <aside class="panel panel-pad">
+          <div class="controls">
+            <div class="ctrl">
+              <label for="pFn">f(x)</label>
+              <input type="text" id="pFn" value="sin(x) + 0.25*x" spellcheck="false">
+              <div class="hint" id="pFnHint">Try: x^2, exp(-x^2), sin(x)/x, tan(x), log(x+2)</div>
+            </div>
+            <div class="ctrl">
+              <label>Window <span class="val" id="pRangeV">−10 … 10</span></label>
+              <input type="range" id="pRange" min="2" max="30" step="1" value="10">
+            </div>
+            <div class="ctrl">
+              <label>Point of tangency <span class="val" id="pX0V">1.50</span></label>
+              <input type="range" id="pX0" min="-10" max="10" step="0.05" value="1.5">
+            </div>
+            <div class="ctrl">
+              <label>Toggles</label>
+              <div class="seg">
+                <button class="chip on" data-tg="tangent">Tangent</button>
+                <button class="chip on" data-tg="deriv">Derivative</button>
+                <button class="chip" data-tg="area">Area</button>
+                <button class="chip on" data-tg="grid">Grid</button>
+              </div>
+            </div>
+          </div>
+        </aside>
+        <div>
+          <canvas class="plot" id="pCanvas" height="460"></canvas>
+          <div class="readout" id="pReadout"></div>
+        </div>
+      </div>
+
+      <!-- ---------------------------------------------------- RIEMANN -->
+      <div class="tabpane" data-pane="riemann">
+        <aside class="panel panel-pad">
+          <div class="controls">
+            <div class="ctrl">
+              <label for="rFn">f(x)</label>
+              <input type="text" id="rFn" value="sin(x)" spellcheck="false">
+            </div>
+            <div class="ctrl">
+              <label>Rectangles <span class="val" id="rNVal">12</span></label>
+              <input type="range" id="rN" min="1" max="200" step="1" value="12">
+            </div>
+            <div class="ctrl">
+              <label>Rule</label>
+              <div class="seg">
+                <button class="chip on" data-rule="left">Left</button>
+                <button class="chip" data-rule="right">Right</button>
+                <button class="chip" data-rule="mid">Midpoint</button>
+                <button class="chip" data-rule="trap">Trapezoid</button>
+                <button class="chip" data-rule="simp">Simpson</button>
+              </div>
+            </div>
+            <div class="ctrl">
+              <label>Interval</label>
+              <div style="display:flex;gap:8px">
+                <input type="text" id="rA" value="0" style="flex:1">
+                <input type="text" id="rB" value="6.2832" style="flex:1">
+              </div>
+            </div>
+          </div>
+        </aside>
+        <div>
+          <canvas class="plot" id="rCanvas" height="460"></canvas>
+          <div class="readout" id="rReadout"></div>
+        </div>
+      </div>
+
+      <!-- ---------------------------------------------------- DESCENT -->
+      <div class="tabpane" data-pane="descent">
+        <aside class="panel panel-pad">
+          <div class="controls">
+            <div class="ctrl">
+              <label>Loss surface</label>
+              <div class="seg">
+                <button class="chip on" data-loss="bowl">Bowl</button>
+                <button class="chip" data-loss="saddle">Saddle</button>
+                <button class="chip" data-loss="rosen">Rosenbrock</button>
+              </div>
+            </div>
+            <div class="ctrl">
+              <label>Learning rate <span class="val" id="dLrV">0.12</span></label>
+              <input type="range" id="dLr" min="1" max="60" step="1" value="12">
+            </div>
+            <div class="ctrl">
+              <label>Momentum <span class="val" id="dMomV">0.00</span></label>
+              <input type="range" id="dMom" min="0" max="95" step="1" value="0">
+            </div>
+            <div class="ctrl">
+              <label>Start point</label>
+              <div class="seg">
+                <button class="chip on" data-start="a">A</button>
+                <button class="chip" data-start="b">B</button>
+                <button class="chip" data-start="c">C</button>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-primary btn-sm" id="dPlay">Run</button>
+              <button class="btn btn-ghost btn-sm" id="dReset">Reset</button>
+            </div>
+          </div>
+        </aside>
+        <div>
+          <canvas class="plot" id="dCanvas" height="460"></canvas>
+          <div class="readout" id="dReadout"></div>
+        </div>
+      </div>
+
+      <!-- ---------------------------------------------------- OPTION -->
+      <div class="tabpane" data-pane="option">
+        <aside class="panel panel-pad">
+          <div class="controls">
+            <div class="ctrl">
+              <label>Type</label>
+              <div class="seg">
+                <button class="chip on" data-opt="call">Call</button>
+                <button class="chip" data-opt="put">Put</button>
+              </div>
+            </div>
+            <div class="ctrl">
+              <label>Spot S₀ <span class="val" id="oSV">100</span></label>
+              <input type="range" id="oS" min="40" max="200" step="1" value="100">
+            </div>
+            <div class="ctrl">
+              <label>Strike K <span class="val" id="oKV">100</span></label>
+              <input type="range" id="oK" min="40" max="200" step="1" value="100">
+            </div>
+            <div class="ctrl">
+              <label>Volatility σ <span class="val" id="oVolV">25%</span></label>
+              <input type="range" id="oVol" min="5" max="90" step="1" value="25">
+            </div>
+            <div class="ctrl">
+              <label>Rate r <span class="val" id="oRV">5%</span></label>
+              <input type="range" id="oR" min="0" max="15" step="1" value="5">
+            </div>
+            <div class="ctrl">
+              <label>T (years) <span class="val" id="oTV">1.0</span></label>
+              <input type="range" id="oT" min="1" max="50" step="1" value="10">
+            </div>
+          </div>
+        </aside>
+        <div>
+          <canvas class="plot" id="oCanvas" height="460"></canvas>
+          <div class="readout" id="oReadout"></div>
+        </div>
+      </div>
+
+      <!-- ------------------------------------------------------ PROB -->
+      <div class="tabpane" data-pane="prob">
+        <aside class="panel panel-pad">
+          <div class="controls">
+            <div class="ctrl">
+              <label>Distribution</label>
+              <select id="bDist">
+                <option value="uniform">Uniform(0,1)</option>
+                <option value="normal" selected>Normal(0,1)</option>
+                <option value="exp">Exponential(1)</option>
+                <option value="cauchy">Cauchy(0,1)</option>
+                <option value="poisson">Poisson(3)</option>
+              </select>
+            </div>
+            <div class="ctrl">
+              <label>Samples <span class="val" id="bNV">4000</span></label>
+              <input type="range" id="bN" min="200" max="20000" step="100" value="4000">
+            </div>
+            <div class="ctrl">
+              <label>Histogram bins <span class="val" id="bBV">30</span></label>
+              <input type="range" id="bB" min="6" max="70" step="1" value="30">
+            </div>
+            <div class="ctrl">
+              <label>Overlay</label>
+              <div class="seg">
+                <button class="chip on" data-tg="hist">Histogram</button>
+                <button class="chip on" data-tg="clt">CLT means</button>
+                <button class="chip on" data-tg="gauss">Gaussian</button>
+              </div>
+            </div>
+          </div>
+        </aside>
+        <div>
+          <canvas class="plot" id="bCanvas" height="460"></canvas>
+          <div class="readout" id="bReadout"></div>
+        </div>
+      </div>
+
+      <!-- ----------------------------------------------------- LINALG -->
+      <div class="tabpane" data-pane="linalg">
+        <aside class="panel panel-pad">
+          <div class="controls">
+            <div class="ctrl">
+              <label>Matrix A</label>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px">
+                <input type="text" id="m00" value="1.2">
+                <input type="text" id="m01" value="0.4">
+                <input type="text" id="m10" value="-0.3">
+                <input type="text" id="m11" value="1.0">
+              </div>
+              <div class="hint">a, b, c, d — the matrix acts on the grid.</div>
+            </div>
+            <div class="ctrl">
+              <label>Animation</label>
+              <div class="seg">
+                <button class="chip on" data-tg="grid">Image grid</button>
+                <button class="chip on" data-tg="eig">Eigenvectors</button>
+                <button class="chip on" data-tg="anim">Animate</button>
+              </div>
+            </div>
+            <div class="ctrl">
+              <label>λ₁ <span class="val" id="lE1">—</span></label>
+              <label>λ₂ <span class="val" id="lE2">—</span></label>
+              <label>det A <span class="val" id="lDet">—</span></label>
+              <label>tr A <span class="val" id="lTr">—</span></label>
+            </div>
+          </div>
+        </aside>
+        <div>
+          <canvas class="plot" id="lCanvas" height="460"></canvas>
+          <div class="readout" id="lReadout"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="wrap">
+    <div class="foot-bottom" style="margin:0;border:0">
+      <span>Every instrument on this page is implemented from scratch in plain JavaScript.</span>
+      <span><a class="link" href="reader.html#ch6">Read the calculus chapters →</a></span>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/js/expr.js"></script>
+<script src="assets/js/app.js"></script>
+<script src="assets/js/lab.js"></script>
+</body>
+</html>

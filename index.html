@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#05080f">
+<title>MATHEMATICA — From Foundations to Deep Learning &amp; Quant Finance</title>
+<meta name="description" content="The Unabridged Four-Volume Mathematical Treatise: 22 chapters, 115 worked examples, 21 formal proofs and 720 fully solved problems — from axiomatic set theory to Itô calculus, Transformers and Black-Scholes. Read it, search it, and play with it in the interactive math lab.">
+<link rel="stylesheet" href="assets/fonts/fonts.css">
+<link rel="stylesheet" href="assets/katex/katex.min.css">
+<link rel="stylesheet" href="assets/css/main.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23f0b458'/%3E%3Ctext x='32' y='46' font-size='42' font-family='Georgia,serif' text-anchor='middle' fill='%230a0f1a'%3E%E2%88%AB%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+
+<!-- ================================================================ NAV -->
+<header class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="index.html">
+      <span class="brand-mark">&sum;</span>
+      <span><b>MATHEMATICA</b> <span>· Treatise</span></span>
+    </a>
+    <nav class="nav-links">
+      <a href="#volumes">Volumes</a>
+      <a href="#chapters">Chapters</a>
+      <a href="#inside">Inside</a>
+      <a href="lab.html">Math Lab</a>
+      <a href="glossary.html">Glossary</a>
+      <a href="reader.html">Read</a>
+    </nav>
+    <div class="nav-tools">
+      <button class="search-trigger" data-search-open>
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg>
+        <span>Search</span>
+        <kbd>/</kbd>
+      </button>
+      <button class="icon-btn" data-theme-toggle aria-label="Toggle theme"><span data-theme-icon></span></button>
+    </div>
+  </div>
+</header>
+
+<!-- =============================================================== HERO -->
+<section class="hero">
+  <div class="hero-aurora"></div>
+  <canvas id="heroGrid"></canvas>
+  <canvas id="heroCanvas"></canvas>
+  <canvas id="heroTrail"></canvas>
+  <div class="hero-inner">
+    <div class="wrap">
+      <div class="hero-copy">
+        <div class="eyebrow">Four Volumes · 22 Chapters · 280 Pages</div>
+        <h1>Mathe<span class="gold">matica</span><br><span class="glyph">∀ x ∃ y</span></h1>
+        <p class="hero-sub">
+          From axiomatic set theory, conic sections and differential calculus to
+          spectral SVD, Itô calculus, Black–Scholes, Transformers and
+          reinforcement learning — one continuous, proof-driven arc.
+        </p>
+        <div class="hero-cta">
+          <a class="btn btn-primary" href="reader.html">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4.5A2.5 2.5 0 016.5 2H20v18H6.5A2.5 2.5 0 004 22z"/><path d="M4 17.5A2.5 2.5 0 016.5 15H20"/></svg>
+            Begin Reading
+          </a>
+          <a class="btn btn-ghost" href="lab.html">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20h18M6 20V10M11 20V4M16 20v-7M21 20v-4"/></svg>
+            Open the Math Lab
+          </a>
+        </div>
+        <div class="stat-strip reveal" id="statStrip"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ VOLUMES -->
+<section class="section" id="volumes">
+  <div class="wrap">
+    <div class="eyebrow reveal">The Arc</div>
+    <h2 class="reveal" style="font-size:clamp(1.9rem,1.4rem+1.8vw,2.9rem);font-weight:400;max-width:18ch">
+      Four volumes, one unbroken thread of reasoning
+    </h2>
+    <p class="lede reveal" style="max-width:62ch;margin-bottom:44px">
+      No prerequisites. Every definition is stated before it is used, every
+      identity is proved before it is applied, and every result is immediately
+      pressed into service on the next page.
+    </p>
+    <div class="grid g-2" id="volumeGrid"></div>
+  </div>
+</section>
+
+<!-- =========================================================== FEATURES -->
+<section class="section-tight" id="features">
+  <div class="wrap">
+    <div class="eyebrow reveal">Why it is different</div>
+    <div class="grid g-3 reveal" id="featureGrid"></div>
+  </div>
+</section>
+
+<!-- =========================================================== CHAPTERS -->
+<section class="section" id="chapters">
+  <div class="wrap">
+    <div class="eyebrow reveal">The Whole Treatise</div>
+    <h2 class="reveal" style="font-size:clamp(1.9rem,1.4rem+1.8vw,2.9rem);font-weight:400">
+      Twenty-two chapters, indexed and searchable
+    </h2>
+    <p class="lede reveal" style="max-width:62ch;margin-bottom:30px">
+      Filter by volume. Every chapter is fully typeset with live mathematics —
+      hover any formula to copy its LaTeX.
+    </p>
+    <div class="ch-toolbar reveal">
+      <button class="chip on" data-vol="all">All</button>
+      <button class="chip" data-vol="1">Vol I</button>
+      <button class="chip" data-vol="2">Vol II</button>
+      <button class="chip" data-vol="3">Vol III</button>
+      <button class="chip" data-vol="4">Vol IV</button>
+      <span style="flex:1"></span>
+      <span class="badge" id="chCount"></span>
+    </div>
+    <div class="grid g-3" id="chapterGrid"></div>
+  </div>
+</section>
+
+<!-- ============================================================= INSIDE -->
+<section class="section" id="inside">
+  <div class="wrap">
+    <div class="eyebrow reveal">Inside the Treatise</div>
+    <h2 class="reveal" style="font-size:clamp(1.9rem,1.4rem+1.8vw,2.9rem);font-weight:400;max-width:20ch">
+      Read it the way a mathematician reads
+    </h2>
+    <p class="lede reveal" style="max-width:60ch;margin-bottom:40px">
+      Theorems unfold into their proofs. Worked examples reveal one step at a
+      time. Graded problems let you attempt first and check afterwards.
+    </p>
+    <div class="grid g-2" style="align-items:start">
+      <div class="panel panel-pad reveal" id="liveSample"></div>
+      <div class="reveal" id="featureDetail"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================ LAB -->
+<section class="section-tight">
+  <div class="wrap">
+    <div class="panel panel-pad reveal" style="display:grid;grid-template-columns:minmax(0,1fr) auto;gap:34px;align-items:center">
+      <div>
+        <div class="eyebrow">Interactive</div>
+        <h2 style="font-size:clamp(1.6rem,1.3rem+1.2vw,2.3rem);font-weight:400;margin-bottom:10px">
+          A laboratory, not a slideshow
+        </h2>
+        <p class="lede" style="max-width:56ch">
+          Plot functions, watch Riemann sums converge, minimise a convex
+          objective by gradient descent, price an option with Monte Carlo, and
+          sample from the standard normal — all in the browser, all real-time.
+        </p>
+      </div>
+      <a class="btn btn-primary" href="lab.html">Enter the Lab</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================= FOOTER -->
+<footer class="footer">
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <a class="brand" href="index.html" style="margin-bottom:14px">
+          <span class="brand-mark">&sum;</span><span><b>MATHEMATICA</b></span>
+        </a>
+        <p style="color:var(--fg-mute);font-size:14px;max-width:40ch;line-height:1.6">
+          The Unabridged Four-Volume Mathematical Treatise and
+          720-Problem Solved Compendium.
+        </p>
+      </div>
+      <div>
+        <h5>Read</h5>
+        <a href="reader.html">The Treatise</a>
+        <a href="reader.html#ch1">Volume I — Algebra</a>
+        <a href="reader.html#ch11">Volume IV — AI &amp; Quant</a>
+        <a href="reader.html#ch22">Final Examination</a>
+      </div>
+      <div>
+        <h5>Explore</h5>
+        <a href="lab.html">Math Lab</a>
+        <a href="glossary.html">Glossary</a>
+        <a href="#chapters">Chapter Index</a>
+        <a href="#volumes">The Arc</a>
+      </div>
+      <div>
+        <h5>Colophon</h5>
+        <a href="#" onclick="return false">Set in Newsreader &amp; KaTeX</a>
+        <a href="#" onclick="return false">22 chapters · 280 pages</a>
+        <a href="#" onclick="return false">Open source &amp; offline-ready</a>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>Mathematics: From Foundational Algebra, Analytic Geometry &amp; Real Calculus to Deep Learning, Stochastic Processes &amp; Quantitative Finance.</span>
+      <span id="footStats"></span>
+    </div>
+  </div>
+</footer>
+
+<!-- ============================================================= SEARCH -->
+<div class="modal" id="searchModal">
+  <div class="modal-box">
+    <div class="modal-input">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg>
+      <input id="searchInput" type="text" placeholder="Search 22 chapters, 720 problems, every proof…" autocomplete="off" spellcheck="false">
+      <button class="icon-btn" data-search-close aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div class="modal-results" id="searchResults"></div>
+    <div class="modal-foot">
+      <span><kbd>↑</kbd><kbd>↓</kbd> navigate</span>
+      <span><kbd>↵</kbd> open</span>
+      <span><kbd>esc</kbd> close</span>
+      <span style="margin-left:auto" id="searchFoot"></span>
+    </div>
+  </div>
+</div>
+
+<script src="assets/katex/katex.min.js"></script>
+<script src="assets/data/treatise.js"></script>
+<script src="assets/js/app.js"></script>
+<script src="assets/js/home.js"></script>
+</body>
+</html>

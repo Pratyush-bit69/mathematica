@@ -1,0 +1,16 @@
+# live tunnel address (machine-specific, changes when the tunnel restarts)
+/live-url.txt
+
+# python
+__pycache__/
+*.py[cod]
+.venv/
+
+# node
+node_modules/
+
+# editors / os
+.DS_Store
+*.swp
+.idea/
+.vscode/

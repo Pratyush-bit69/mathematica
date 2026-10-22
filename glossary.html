@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#05080f">
+<title>Glossary &amp; Formula Sheet — MATHEMATICA</title>
+<meta name="description" content="A searchable glossary of every major concept in the treatise, a formula sheet of the identities that matter, and the complete index of formal theorems and their proofs.">
+<link rel="stylesheet" href="assets/fonts/fonts.css">
+<link rel="stylesheet" href="assets/katex/katex.min.css">
+<link rel="stylesheet" href="assets/css/main.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23f0b458'/%3E%3Ctext x='32' y='46' font-size='42' font-family='Georgia,serif' text-anchor='middle' fill='%230a0f1a'%3E%E2%88%AB%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <a class="brand" href="index.html">
+      <span class="brand-mark">&sum;</span>
+      <span><b>MATHEMATICA</b> <span>· Glossary</span></span>
+    </a>
+    <nav class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="reader.html">Treatise</a>
+      <a href="lab.html">Math Lab</a>
+    </nav>
+    <div class="nav-tools">
+      <button class="search-trigger" data-search-open>
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg>
+        <span>Search</span><kbd>/</kbd>
+      </button>
+      <button class="icon-btn" data-theme-toggle aria-label="Toggle theme"><span data-theme-icon></span></button>
+    </div>
+  </div>
+</header>
+
+<section class="section-tight" style="padding-bottom:0">
+  <div class="wrap">
+    <div class="eyebrow">Reference</div>
+    <h1 style="font-size:clamp(2rem,1.5rem+2.2vw,3.2rem);font-weight:400;margin-bottom:10px">
+      Glossary &amp; Formula Sheet
+    </h1>
+    <p class="lede" style="max-width:64ch;margin-bottom:26px">
+      Every concept the treatise introduces, defined in one place, plus the
+      identities worth memorising and the index of all formal proofs.
+    </p>
+    <div class="ch-toolbar">
+      <button class="chip on" data-mode="terms">Concepts</button>
+      <button class="chip" data-mode="formulas">Formula sheet</button>
+      <button class="chip" data-mode="theorems">Theorem index</button>
+      <span style="flex:1"></span>
+      <input type="text" id="gSearch" placeholder="Filter…" style="width:230px;height:38px;padding:0 14px;border-radius:10px;border:1px solid var(--line);background:var(--bg-inset);font-family:var(--sans);font-size:13.5px;outline:none">
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:18px">
+  <div class="wrap">
+    <div id="gTerms"></div>
+    <div id="gFormulas" class="hide"></div>
+    <div id="gTheorems" class="hide"></div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="wrap">
+    <div class="foot-bottom" style="margin:0;border:0">
+      <span>Definitions distilled from the Unabridged Four-Volume Mathematical Treatise.</span>
+      <span><a class="link" href="reader.html">Read the proofs →</a></span>
+    </div>
+  </div>
+</footer>
+
+<div class="modal" id="searchModal">
+  <div class="modal-box">
+    <div class="modal-input">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg>
+      <input id="searchInput" type="text" placeholder="Search 22 chapters, 720 problems, every proof…" autocomplete="off" spellcheck="false">
+      <button class="icon-btn" data-search-close aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div class="modal-results" id="searchResults"></div>
+    <div class="modal-foot">
+      <span><kbd>↑</kbd><kbd>↓</kbd> navigate</span>
+      <span><kbd>↵</kbd> open</span>
+      <span><kbd>esc</kbd> close</span>
+    </div>
+  </div>
+</div>
+
+<script src="assets/katex/katex.min.js"></script>
+<script src="assets/data/treatise.js"></script>
+<script src="assets/data/glossary.js"></script>
+<script src="assets/js/app.js"></script>
+<script src="assets/js/glossary.js"></script>
+</body>
+</html>
