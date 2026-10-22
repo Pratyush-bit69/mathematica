@@ -21,8 +21,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         pass
 
 
-socketserver.TCPServer.allow_reuse_address = True
-httpd = socketserver.TCPServer(("127.0.0.1", PORT), Handler)
+socketserver.ThreadingTCPServer.allow_reuse_address = True
+httpd = socketserver.ThreadingTCPServer(("127.0.0.1", PORT), Handler)
 threading.Thread(target=httpd.serve_forever, daemon=True).start()
 
 TABS = ["plot", "riemann", "descent", "option", "prob", "linalg"]

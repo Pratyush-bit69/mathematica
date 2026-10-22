@@ -25,8 +25,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
 
 def serve():
-    socketserver.TCPServer.allow_reuse_address = True
-    httpd = socketserver.TCPServer(("127.0.0.1", PORT), Handler)
+    socketserver.ThreadingTCPServer.allow_reuse_address = True
+    httpd = socketserver.ThreadingTCPServer(("127.0.0.1", PORT), Handler)
     t = threading.Thread(target=httpd.serve_forever, daemon=True)
     t.start()
     return httpd

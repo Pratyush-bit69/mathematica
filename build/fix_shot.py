@@ -21,8 +21,8 @@ class H(http.server.SimpleHTTPRequestHandler):
         pass
 
 
-socketserver.TCPServer.allow_reuse_address = True
-httpd = socketserver.TCPServer(("127.0.0.1", PORT), H)
+socketserver.ThreadingTCPServer.allow_reuse_address = True
+httpd = socketserver.ThreadingTCPServer(("127.0.0.1", PORT), H)
 threading.Thread(target=httpd.serve_forever, daemon=True).start()
 
 with sync_playwright() as p:

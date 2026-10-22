@@ -41,8 +41,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
 
 if __name__ == "__main__":
-    socketserver.TCPServer.allow_reuse_address = True
-    with socketserver.TCPServer(("127.0.0.1", PORT), Handler) as httpd:
+    socketserver.ThreadingTCPServer.allow_reuse_address = True
+    with socketserver.ThreadingTCPServer(("127.0.0.1", PORT), Handler) as httpd:
         print(f"MATHEMATICA → http://127.0.0.1:{PORT}/")
         print("Ctrl-C to stop.")
         try:

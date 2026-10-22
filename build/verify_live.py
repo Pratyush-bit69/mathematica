@@ -5,6 +5,7 @@ import socketserver
 import threading
 import os
 import sys
+import urllib.parse
 
 from playwright.sync_api import sync_playwright
 
@@ -13,7 +14,6 @@ BASE = sys.argv[1] if len(sys.argv) > 1 else \
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 OUT = "/tmp/opencode/shots"
 os.makedirs(OUT, exist_ok=True)
-PORT = 8771
 
 fails = []
 
@@ -33,9 +33,14 @@ class H(http.server.SimpleHTTPRequestHandler):
         pass
 
 
-socketserver.TCPServer.allow_reuse_address = True
-httpd = socketserver.TCPServer(("127.0.0.1", PORT), H)
-threading.Thread(target=httpd.serve_forever, daemon=True).start()
+# A remote target needs no local server; a local target is served from this
+# checkout on an OS-assigned free port, so two runs never collide.
+if urllib.parse.urlparse(BASE).hostname in ("127.0.0.1", "localhost", "::1"):
+    socketserver.ThreadingTCPServer.allow_reuse_address = True
+    httpd = socketserver.ThreadingTCPServer(("127.0.0.1", 0), H)
+    threading.Thread(target=httpd.serve_forever, daemon=True).start()
+    BASE = "http://127.0.0.1:%d" % httpd.server_address[1]
+    print("serving %s on %s\n" % (ROOT, BASE))
 
 with sync_playwright() as p:
     b = p.chromium.launch(args=["--no-sandbox", "--disable-dev-shm-usage"])
