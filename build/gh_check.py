@@ -7,17 +7,20 @@ import time
 
 from playwright.sync_api import sync_playwright
 
-SRC = "/home/pratyush/.config/BraveSoftware/Brave-Browser/Default"
+SRC = os.path.expanduser(
+    "~/.config/BraveSoftware/Brave-Browser/Default")
 DST = "/tmp/opencode/whatsapp-profile/Default"
 OUT = "/tmp/opencode/shots"
 os.makedirs(OUT, exist_ok=True)
 
 # refresh the session cookies from the live profile
+os.makedirs(DST, exist_ok=True)
 for f in ("Cookies", "Cookies-journal"):
     try:
         shutil.copy(os.path.join(SRC, f), os.path.join(DST, f))
-    except OSError:
-        pass
+    except OSError as e:
+        print(f"note: could not copy {f} from the live profile ({e})",
+              file=sys.stderr)
 
 TARGET = sys.argv[1] if len(sys.argv) > 1 else \
     "https://github.com/Pratyush-bit69/mathematica"
@@ -38,6 +41,11 @@ with sync_playwright() as p:
     time.sleep(7)
     page.screenshot(path=f"{OUT}/gh-repo.png", full_page=False)
     print("url:", page.url)
+    body = page.inner_text("body")
+    if "Sign in" in body[:2000] and "private" not in body.lower():
+        print("note: this browser profile is not signed in to GitHub, so a "
+              "private repo shows the sign-in page — sign in in the window "
+              "that just opened and re-run this script.")
     print("---- text ----")
-    print(page.inner_text("body")[:2500])
+    print(body[:2500])
     ctx.close()

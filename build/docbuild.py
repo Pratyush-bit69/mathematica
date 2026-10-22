@@ -62,7 +62,7 @@ def page_words(items):
     return absorb(words)
 
 
-ABSORB_CHARS = set("0123456789.,;:+-−=<>()[]{}/*!|' ")
+ABSORB_CHARS = set(r"0123456789.,;:+\-−=<>()[]{}/*!|' ")
 
 
 def absorb(words):
