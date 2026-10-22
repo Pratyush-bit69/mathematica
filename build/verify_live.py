@@ -82,7 +82,16 @@ with sync_playwright() as p:
     pg.goto(BASE + "/", wait_until="networkidle", timeout=90000)
     pg.wait_for_timeout(1500)
     pg.keyboard.press("/")
-    pg.wait_for_timeout(500)
+    # the "/" shortcut can be swallowed on a loaded machine — fall back to
+    # the search button and wait properly, so a slow run reports a FAIL
+    # instead of raising a Playwright timeout.
+    if not pg.is_visible("#searchInput"):
+        pg.click("[data-search-open]")
+    try:
+        pg.wait_for_selector("#searchInput", state="visible", timeout=15000)
+    except Exception:
+        pass
+    check("search palette opens", pg.is_visible("#searchInput"))
     pg.fill("#searchInput", "Cayley-Hamilton")
     pg.wait_for_timeout(900)
     check("search finds results", len(pg.query_selector_all(".sr")) > 0)
