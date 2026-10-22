@@ -16,6 +16,20 @@ PDF = "/home/pratyushn/Downloads/Unabridged_Mathematics_Treatise_Complete.pdf"
 XML = "/tmp/opencode/mathpdf/doc.xml"
 OUT = os.path.join(os.path.dirname(__file__), "..", "assets", "data",
                    "treatise.js")
+WORK = "/tmp/opencode/mathpdf"
+
+
+def ensure_inputs():
+    """Regenerate the pdftohtml extracts if they are missing."""
+    if os.path.exists(XML) and os.path.exists(os.path.join(WORK, "p13.html")):
+        return
+    os.makedirs(WORK, exist_ok=True)
+    import subprocess
+    print("extracting PDF geometry …", flush=True)
+    subprocess.run(["pdftohtml", "-xml", "-noframes", "-i", "-hidden", "-q",
+                    PDF, os.path.join(WORK, "doc")], check=True)
+    subprocess.run(["pdftohtml", "-i", "-noframes", "-q", "-f", "13", "-l", "13",
+                    PDF, os.path.join(WORK, "p13")], check=True)
 
 HEADER_RE = re.compile(r"^MATHEMATICS:\s*FOUNDATIONAL ALGEBRA")
 FOOTER_RE = re.compile(r"Unabridged Chapters")
@@ -61,6 +75,7 @@ def parse_outline(outline):
 
 
 def main():
+    ensure_inputs()
     pages, fonts = load(XML)
     outline = load_outline()
     otree, _ = parse_outline(outline)

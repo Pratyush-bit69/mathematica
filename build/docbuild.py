@@ -150,6 +150,16 @@ def build_lines(words):
     return lines
 
 
+def _plain(tex):
+    """A readable plain-text approximation of a formula, for the search index."""
+    t = re.sub(r"\\[a-zA-Z]+", " ", tex)
+    t = t.replace("\\{", " { ").replace("\\}", " } ")
+    t = re.sub(r"[{}_^]", " ", t)
+    t = re.sub(r"\\[,;:!]", " ", t)
+    t = re.sub(r"\s+", " ", t).strip()
+    return t
+
+
 def line_runs(line, words=None):
     """Split a line into alternating text / math runs."""
     ws = words if words is not None else line["ws"]
@@ -231,14 +241,12 @@ def line_runs(line, words=None):
             ws2 = sorted(r["ws"], key=lambda w: (w.top, w.l))
             node = build_math(ws2)
             latex = node.latex()
-            html = node.html()
             if need_space:
                 if out and out[-1]["k"] == "text":
                     out[-1]["v"] = out[-1]["v"] + " "
                 else:
                     latex = "\\ " + latex
-                    html = '<span class="mspace"></span>' + html
-            out.append({"k": "math", "latex": latex, "html": html})
+            out.append({"k": "math", "latex": latex})
         if r["ws"]:
             prev_word = r["ws"][-1]
     # tidy: collapse double spaces and strip the very first

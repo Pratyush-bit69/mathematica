@@ -119,12 +119,7 @@
           let txt = "";
           (runs || []).forEach(function (r) {
             if (r.k === "text") txt += r.v;
-            else if (r.html) {
-              // readable plain text for the index
-              txt += " " + r.html.replace(/<[^>]*>/g, "")
-                .replace(/&lt;/g, "<").replace(/&gt;/g, ">")
-                .replace(/&amp;/g, "&").replace(/&nbsp;/g, " ") + " ";
-            } else txt += " " + (r.latex || "") + " ";
+            else if (r.latex) txt += " " + Index.plain(r.latex) + " ";
           });
           txt = txt.replace(/\s+/g, " ").trim();
           if (txt.length < 3) return;
@@ -168,8 +163,16 @@
     }
   };
 
-  function highlight(text, q) {
-    const terms = q.trim().split(/\s+/).filter(Boolean);
+  Index.plain = function (tex) {
+    return String(tex)
+      .replace(/\\[a-zA-Z]+/g, " ")
+      .replace(/\\([{}(),;:!])/g, " $1 ")
+      .replace(/[{}_^]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  };
+
+  function highlight(text, q) {    const terms = q.trim().split(/\s+/).filter(Boolean);
     let html = escapeHtml(text);
     terms.forEach(function (t) {
       const re = new RegExp("(" + t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + ")", "gi");
