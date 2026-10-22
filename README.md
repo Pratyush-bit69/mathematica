@@ -1,5 +1,8 @@
 # MATHEMATICA — The Unabridged Four-Volume Mathematical Treatise
 
+**Live:** <https://pratyush-bit69.github.io/mathematica/>
+**Source:** <https://github.com/Pratyush-bit69/mathematica> (private)
+
 A complete, self-contained mathematics website built from
 `Unabridged_Mathematics_Treatise_Complete.pdf` (280 pages, LaTeX source).
 
@@ -136,8 +139,23 @@ node build/validate_tex.js        # 100 % of formulas parse
 ### Tests
 
 ```bash
-python3 build/e2e.py              # 36 checks, all four pages, no console errors
+python3 build/e2e.py          # 36 checks, all four pages, no console errors
+python3 build/verify_push.py  # every blob SHA local vs remote + Pages + live site
+python3 build/verify_live.py  # drives a browser against the deployed URL
 ```
+
+### Deploying
+
+The site is static, so GitHub Pages serves it directly from the repo root.
+
+```bash
+gh auth setup-git
+git push origin main            # Pages rebuilds automatically
+```
+
+`build/verify_push.py` then proves the deployment: it compares every local
+blob SHA against the remote tree, confirms the Pages build matches `HEAD`,
+and fetches the live pages.
 
 ---
 
