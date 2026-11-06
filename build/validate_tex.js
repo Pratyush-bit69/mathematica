@@ -35,6 +35,7 @@ T.chapters.forEach(function (ch) {
   (ch.sections || []).forEach(function (s) {
     (s.blocks || []).forEach(function (b) {
       runs(b.runs, "ch" + ch.num + " §" + s.num);
+      runs(b.statement, "ch" + ch.num + " §" + s.num + " [statement]");
     });
   });
 });

@@ -4,7 +4,7 @@
 **Source:** <https://github.com/Pratyush-bit69/mathematica> (private)
 
 A complete, self-contained mathematics website built from
-`Unabridged_Mathematics_Treatise_Complete.pdf` (280 pages, LaTeX source).
+`Unabridged_Mathematics_Treatise_Complete.pdf` (280 pages, typeset in LaTeX).
 
 The treatise is not merely republished — every glyph of every formula is
 **reconstructed into real LaTeX from the PDF's own geometry** and re-rendered
@@ -16,7 +16,7 @@ with KaTeX, so every expression is live, selectable and copy-pasteable.
 
 | File | What it is |
 |---|---|
-| `index.html` | Landing page — animated hero, the four-volume arc, chapter index, live excerpt |
+| `index.html` | Landing page — editorial hero, the four-volume arc, chapter index, live excerpt |
 | `reader.html` | The treatise reader — 22 chapters, collapsible proofs & solutions, section rail, progress |
 | `lab.html` | **The Math Lab** — six working instruments, all computed live in the browser |
 | `glossary.html` | Glossary of every concept, a formula sheet, and the complete theorem index |
@@ -78,8 +78,8 @@ The result is validated by parsing **every** generated formula with KaTeX:
 
 ```
 $ node build/validate_tex.js
-total math spans: 18747
-parsed cleanly  : 18747 (100.00%)
+total math spans: 7520
+parsed cleanly  : 7520 (100.00%)
 ```
 
 ### Fidelity against the source's own statistics
@@ -89,12 +89,14 @@ parsed cleanly  : 18747 (100.00%)
 | 22 chapters | 22 ✓ |
 | 21 formal theorem–proof blocks | 21 ✓ |
 | 115 worked examples | 115 ✓ |
-| 720 solved problems | 115 examples + 605 graded drills = **720** ✓ |
+| 720 worked solutions (115 examples + 605 graded problems) | **720** ✓ |
 | 4 volumes | 4 ✓ |
 | 280 pages | 280 ✓ |
 
-314,974 characters of prose and 18,747 mathematical expressions are recovered
-from the page geometry, with no line of the original text dropped.
+112,200 characters of prose and 7,520 mathematical expressions are recovered
+from the page geometry across the 22 mathematical chapters. The PDF's
+video-curriculum appendix (Part II) is intentionally excluded because it is a
+link table, not part of the treatise.
 
 ---
 
@@ -146,7 +148,7 @@ they are missing.
 ### Tests
 
 ```bash
-python3 build/e2e.py          # 37 checks, all four pages, no console errors
+<python3 build/e2e.py          # 83 checks, all four pages, no console errors
 python3 build/verify_push.py  # every blob SHA local vs remote + Pages + live site
 python3 build/verify_live.py  # drives a browser against the deployed URL
 ```
@@ -164,16 +166,59 @@ environment, falling back to `/tmp/opencode/.gh-token`.
 
 ### Deploying
 
-The site is static, so GitHub Pages serves it directly from the repo root.
+The site is 100% static — no build step, no server runtime. Pick one of these.
+
+#### GitHub Pages (current setup)
+
+1. Repo → **Settings → Pages → Build and deployment**.
+2. Source: **Deploy from a branch**.
+3. Branch: **`main`**, folder: **`/ (root)`**.
+4. Save. Pages rebuilds automatically on every push.
 
 ```bash
 gh auth setup-git
-git push origin main            # Pages rebuilds automatically
+git add -A
+git commit -m "Add support button and accuracy fixes"
+git push origin main
 ```
 
-`build/verify_push.py` then proves the deployment: it compares every local
-blob SHA against the remote tree, confirms the Pages build matches `HEAD`,
-and fetches the live pages.
+Live URL: <https://pratyush-bit69.github.io/mathematica/>
+
+> GitHub Pages on a **private** repository requires GitHub Pro, Team or
+> Enterprise. If Pages is not available for this repo, make it public or use
+> Netlify Drop / Cloudflare Pages, which are free for private repos.
+
+`build/verify_push.py` proves the GitHub Pages deployment: it compares every
+local blob SHA against the remote tree, confirms the Pages build matches
+`HEAD`, and fetches the live pages.
+
+#### Netlify Drop (fastest, no CLI)
+
+1. Open <https://app.netlify.com/drop>.
+2. Drag the project folder (or a zip of it) onto the page.
+3. Netlify returns a public URL immediately.
+4. Optional: **Site settings → Domain management** to attach a custom domain.
+
+No build command is needed; the publish directory is the repo root.
+
+#### Cloudflare Pages
+
+1. Cloudflare dashboard → **Workers & Pages → Create → Pages**.
+2. Connect the Git repo, or choose **Direct Upload**.
+3. Framework preset: **None**. Build command: leave blank. Build output
+   directory: **`/`**.
+4. Deploy. Every push to `main` redeploys automatically.
+
+Or deploy from the CLI:
+
+```bash
+npx wrangler pages deploy . --project-name mathematica
+```
+
+#### Any static host
+
+The same folder works on S3 + CloudFront, Firebase Hosting, Vercel, Render,
+or any ordinary web server. Upload the repo root and serve `index.html`.
 
 ---
 
@@ -183,8 +228,8 @@ and fetches the live pages.
   the source PDF's own palette but rebuilt from scratch.
 * **Type.** Newsreader for prose, Inter for the interface, JetBrains Mono for
   code, KaTeX for mathematics. Three axes: display, serif and mono.
-* **Motion.** Scroll reveals, a pointer-reactive card glow, a live
-  rose-curve field behind the hero, and a reading-progress ring.
+* **Motion.** Restrained scroll reveals, a pointer-reactive card glow, and a
+  reading-progress ring.
 * **Two themes.** Dark by default; light is a warm paper theme, not an
   inversion.
 * **Accessibility.** Semantic landmarks, visible focus rings, `prefers-

@@ -11,7 +11,8 @@
 
   function esc(s) {
     return String(s == null ? "" : s)
-      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
   }
 
   let mode = "terms";
@@ -29,11 +30,11 @@
           (e.t + " " + e.d + " " + e.c).toLowerCase().indexOf(filter) >= 0;
       });
       if (!items.length) return "";
-      return '<section style="margin-bottom:44px">' +
-        '<div class="eyebrow">' + esc(c) + "</div>" +
+      return '<section class="g-cat">' +
+        '<div class="eyebrow">' + esc(c) + ' <span class="g-count">' + items.length + "</span></div>" +
         '<div class="grid g-3">' +
         items.map(function (e) {
-          return '<div class="card feat">' +
+          return '<div class="card feat g-card">' +
             "<h3>" + esc(e.t) + "</h3>" +
             "<p>" + esc(e.d) + "</p></div>";
         }).join("") + "</div></section>";
@@ -47,7 +48,7 @@
     });
     $("#gFormulas").innerHTML = '<div class="grid g-2">' +
       items.map(function (f) {
-        return '<div class="card feat">' +
+        return '<div class="card feat formula-card g-card">' +
           "<h3>" + esc(f.t) + "</h3>" +
           '<div class="fmath" data-tex="' + esc(f.l) + '"></div></div>';
       }).join("") + "</div>";
@@ -68,21 +69,20 @@
       return !filter || (t.num + " " + t.title).toLowerCase().indexOf(filter) >= 0;
     });
     $("#gTheorems").innerHTML =
-      '<div class="panel panel-pad" style="margin-bottom:18px">' +
+      '<div class="panel panel-pad g-note">' +
       '<div class="eyebrow" style="margin-bottom:6px">All ' + out.length +
       " formal theorems</div>" +
-      '<p style="color:var(--fg-mute);font-size:0.94rem;margin:0">Each proof is ' +
-      "written out in full in the reader — click through to the chapter it lives in.</p></div>" +
+      "<p>Each proof is written out in full in the reader — click through to " +
+      "the chapter and section where it lives.</p></div>" +
       '<div class="grid g-2">' +
       items.map(function (t) {
-        return '<a class="card feat" href="reader.html#ch' + t.ch + "-" +
+        return '<a class="card feat g-card g-theorem" href="reader.html#ch' + t.ch + "-" +
           t.sec.replace(/\./g, "-") + '">' +
-          '<div class="n" style="font-family:var(--mono);font-size:11px;color:var(--accent);margin-bottom:8px">THEOREM ' +
-          esc(t.num) + " · CHAPTER " + t.ch + "</div>" +
+          '<div class="tmeta">THEOREM ' + esc(t.num) + " · CHAPTER " + t.ch + "</div>" +
           "<h3>" + esc(t.title) + "</h3>" +
-          '<p style="font-family:var(--sans);font-size:12px;color:var(--fg-faint)">Section ' +
-          esc(t.sec) + " →</p></a>";
-      }).join("") + "</div>";
+          '<div class="tsec">Section ' + esc(t.sec) + " →</div></a>";
+      }).join("") + "</div>" +
+      (items.length ? "" : '<div class="modal-empty">No theorem matches “' + esc(filter) + "”.</div>");
   }
 
   function renderMath(root) {
@@ -103,14 +103,23 @@
 
     $$("[data-mode]").forEach(function (b) {
       b.addEventListener("click", function () {
-        $$("[data-mode]").forEach(function (x) { x.classList.remove("on"); });
+        $$("[data-mode]").forEach(function (x) {
+          x.classList.remove("on");
+          x.setAttribute("aria-pressed", "false");
+        });
         b.classList.add("on");
+        b.setAttribute("aria-pressed", "true");
         mode = b.getAttribute("data-mode");
         $("#gTerms").classList.toggle("hide", mode !== "terms");
         $("#gFormulas").classList.toggle("hide", mode !== "formulas");
         $("#gTheorems").classList.toggle("hide", mode !== "theorems");
-        if (mode === "formulas") renderMath($("#gFormulas"));
+        if (mode === "terms") renderTerms();
+        else if (mode === "formulas") renderFormulas();
+        else renderTheorems();
       });
+    });
+    $$("[data-mode]").forEach(function (b) {
+      b.setAttribute("aria-pressed", b.classList.contains("on") ? "true" : "false");
     });
 
     $("#gSearch").addEventListener("input", function (e) {
@@ -118,6 +127,15 @@
       if (mode === "terms") renderTerms();
       else if (mode === "formulas") renderFormulas();
       else renderTheorems();
+    });
+    $("#gSearch").addEventListener("keydown", function (e) {
+      if (e.key === "Escape") {
+        e.target.value = "";
+        filter = "";
+        if (mode === "terms") renderTerms();
+        else if (mode === "formulas") renderFormulas();
+        else renderTheorems();
+      }
     });
   }
 

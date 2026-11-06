@@ -56,6 +56,15 @@ def page_words(items):
         for (t, l, r, src, sp) in split_words(it):
             if not t:
                 continue
+            # CMEX10's radical extension glyph is extracted as a literal "p".
+            # Restoring it here lets the math builder attach the radicand.
+            if src.family == "CMEX10" and t == "p":
+                t = "√"
+            # In CMEX10 the integral sign is extracted as "R" (display size)
+            # or "Z" (text size). Neither letter is used as a variable in that
+            # font, so recover the operator before limits are attached.
+            if src.family == "CMEX10" and t in ("R", "Z"):
+                t = "∫"
             role = classify(t, src)
             words.append(MW(t, l, r, src.size, role, src.family, src.top,
                             src.bold, sp))
@@ -334,6 +343,27 @@ def build_blocks(lines):
     pending = None       # accumulating paragraph
     skip = set()
 
+    def merge_heading_continuation(li, title):
+        """Join a wrapped bold heading with its short continuation lines."""
+        j = li + 1
+        while j < len(lines) and j not in skip:
+            nxt = lines[j]
+            if not nxt["ws"] or not nxt["ws"][0].bold:
+                break
+            if nxt["top"] - lines[j - 1]["top"] > 32:
+                break
+            cont = " ".join(w.t for w in nxt["ws"]).strip()
+            if not cont or SEC_RE.match(cont) or HEAD_RE.match(cont) \
+                    or TIER_RE.match(cont):
+                break
+            if title.endswith(("-", "–")):
+                title = title[:-1] + cont
+            else:
+                title = title + " " + cont
+            skip.add(j)
+            j += 1
+        return title
+
     def flush():
         """Emit any paragraph still being accumulated."""
         nonlocal pending
@@ -359,18 +389,20 @@ def build_blocks(lines):
         # ---- headings -------------------------------------------------
         if first.bold and HEAD_RE.match(alltext) and len(alltext) > 12:
             m = HEAD_RE.match(alltext)
-            blocks.append({"type": "chapter", "num": int(m.group(2)),
-                           "title": m.group(3).strip()})
             flush()
+            blocks.append({"type": "chapter", "num": int(m.group(2)),
+                           "title": merge_heading_continuation(
+                               li, m.group(3).strip())})
             continue
         if first.bold:
             m = SEC_RE.match(alltext)
             if m and len(m.group(2)) > 4:
                 num = m.group(1)
                 if int(num.split(".")[0]) <= 22:
-                    blocks.append({"type": "section", "num": num,
-                                   "title": m.group(2).strip()})
                     flush()
+                    blocks.append({"type": "section", "num": num,
+                                   "title": merge_heading_continuation(
+                                       li, m.group(2).strip())})
                     continue
 
         # ---- theorem / example / problem -------------------------------
@@ -417,9 +449,10 @@ def build_blocks(lines):
                 if m and len(m.group(2)) > 4:
                     num = m.group(1)
                     if int(num.split(".")[0]) <= 22:
-                        blocks.append({"type": "section", "num": num,
-                                       "title": m.group(2).strip()})
                         flush()
+                        blocks.append({"type": "section", "num": num,
+                                       "title": merge_heading_continuation(
+                                           li, m.group(2).strip())})
                         continue
             if TIER_RE.match(alltext):
                 blocks.append({"type": "tier", "title": alltext})

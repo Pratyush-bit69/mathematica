@@ -34,7 +34,7 @@
     ctx.fillStyle = css("--bg-inset", "rgba(0,0,0,.4)");
     ctx.fillRect(0, 0, w, h);
     if (o.grid !== false) {
-      ctx.strokeStyle = "rgba(148,176,214,0.09)";
+      ctx.strokeStyle = css("--plot-grid", "rgba(148,176,214,0.09)");
       ctx.lineWidth = 1;
       const stepX = niceStep((x1 - x0) / 10);
       const stepY = niceStep((y1 - y0) / 8);
@@ -61,7 +61,7 @@
       }
     }
     // axes
-    ctx.strokeStyle = "rgba(148,176,214,0.34)";
+    ctx.strokeStyle = css("--plot-axis", "rgba(148,176,214,0.34)");
     ctx.lineWidth = 1.2;
     ctx.beginPath();
     if (y0 <= 0 && y1 >= 0) {
@@ -1010,7 +1010,10 @@
     tabs.forEach(function (t) {
       t.addEventListener("click", function () {
         const name = t.getAttribute("data-tab");
-        tabs.forEach(function (x) { x.classList.toggle("on", x === t); });
+        tabs.forEach(function (x) {
+          x.classList.toggle("on", x === t);
+          x.setAttribute("aria-selected", x === t ? "true" : "false");
+        });
         $$(".tabpane").forEach(function (p) {
           p.classList.toggle("on", p.getAttribute("data-pane") === name);
         });
@@ -1032,6 +1035,18 @@
     Option.init();
     Prob.init();
     Linalg.init();
+
+    // Canvas colours are read from CSS variables, so repaint the visible
+    // instrument whenever the user switches theme.
+    document.addEventListener("themechange", function () {
+      const pane = $(".tabpane.on");
+      const name = pane && pane.getAttribute("data-pane");
+      const map = { plot: Plot, riemann: Riemann, descent: Descent,
+        option: Option, prob: Prob, linalg: Linalg };
+      if (name && map[name]) {
+        try { map[name].draw(); } catch (e) { /* inactive tool */ }
+      }
+    });
   }
 
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);

@@ -24,7 +24,7 @@ LATEX = {
     "⊤": r"\top", "⊥": r"\perp", "∇": r"\nabla", "∂": r"\partial",
     "⌊": r"\lfloor", "⌋": r"\rfloor", "⌈": r"\lceil", "⌉": r"\rceil",
     "⟨": r"\langle", "⟩": r"\rangle",
-    "√": r"\sqrt{}", "∞": r"\infty",
+    "√": r"\surd", "∞": r"\infty",
     "∑": r"\sum", "∏": r"\prod", "∫": r"\int", "∬": r"\iint",
     "∆": r"\Delta", "Σ": r"\Sigma", "Π": r"\Pi", "Ω": r"\Omega",
     "Γ": r"\Gamma", "Λ": r"\Lambda", "Φ": r"\Phi", "Θ": r"\Theta",
@@ -292,7 +292,12 @@ class Sqrt(Node):
         self.radicand = radicand
 
     def latex(self):
-        return "\\sqrt{" + self.radicand.latex() + "}"
+        inner = self.radicand.latex()
+        # A radical with no recoverable radicand is better shown as a bare
+        # surd than as an empty radical box; collapse nested empty radicals.
+        if not inner or inner.replace("\\surd", "") == "":
+            return "\\surd"
+        return "\\sqrt{" + inner + "}"
 
     def html(self):
         return f'<span class="msqrt"><span class="mrad">√</span><span class="mradicand">{self.radicand.html()}</span></span>'

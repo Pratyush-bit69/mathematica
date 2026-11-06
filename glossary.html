@@ -25,6 +25,10 @@
       <a href="lab.html">Math Lab</a>
     </nav>
     <div class="nav-tools">
+      <a class="nav-support" href="https://www.buymeachai.in/pratyush" target="_blank" rel="noopener noreferrer" title="Buy Pratyush a chai">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 9h11v4.5a5.5 5.5 0 01-5.5 5.5h0A5.5 5.5 0 015 13.5V9z"/><path d="M16 10.5h1.8a2.7 2.7 0 010 5.4H16"/><path d="M4 21h14"/><path d="M9 6c0-1 1-1.4 1-2.4M13 6c0-1 1-1.4 1-2.4"/></svg>
+        <span>Buy a chai</span>
+      </a>
       <button class="search-trigger" data-search-open>
         <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg>
         <span>Search</span><kbd>/</kbd>
@@ -34,31 +38,49 @@
   </div>
 </header>
 
-<section class="section-tight" style="padding-bottom:0">
+<section class="page-head">
   <div class="wrap">
     <div class="eyebrow">Reference</div>
-    <h1 style="font-size:clamp(2rem,1.5rem+2.2vw,3.2rem);font-weight:400;margin-bottom:10px">
-      Glossary &amp; Formula Sheet
-    </h1>
-    <p class="lede" style="max-width:64ch;margin-bottom:26px">
+    <h1>Glossary &amp; Formula Sheet</h1>
+    <p class="lede">
       Every concept the treatise introduces, defined in one place, plus the
       identities worth memorising and the index of all formal proofs.
     </p>
-    <div class="ch-toolbar">
+    <div class="page-tools ch-toolbar" style="margin-bottom:0">
       <button class="chip on" data-mode="terms">Concepts</button>
       <button class="chip" data-mode="formulas">Formula sheet</button>
       <button class="chip" data-mode="theorems">Theorem index</button>
-      <span style="flex:1"></span>
-      <input type="text" id="gSearch" placeholder="Filter…" style="width:230px;height:38px;padding:0 14px;border-radius:10px;border:1px solid var(--line);background:var(--bg-inset);font-family:var(--sans);font-size:13.5px;outline:none">
+      <span class="spacer"></span>
+      <input type="search" id="gSearch" class="g-search" placeholder="Filter concepts & formulas…" aria-label="Filter the glossary" autocomplete="off">
     </div>
   </div>
 </section>
 
-<section class="section" style="padding-top:18px">
+<section class="section" style="padding-top:8px">
   <div class="wrap">
     <div id="gTerms"></div>
     <div id="gFormulas" class="hide"></div>
     <div id="gTheorems" class="hide"></div>
+  </div>
+</section>
+
+<!-- ============================================================ SUPPORT -->
+<section class="support-band" aria-labelledby="supportTitle">
+  <div class="wrap">
+    <div class="support-inner">
+      <div class="support-icon" aria-hidden="true">
+        <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M11 19h21v9.5A10.5 10.5 0 0119.5 39h-1A10.5 10.5 0 018 28.5V19z"/><path d="M32 21.5h3.2a5.3 5.3 0 010 10.6H32"/><path d="M7 43h30"/><path d="M17 13.5c0-2 2-2.8 2-4.8M24 13.5c0-2 2-2.8 2-4.8"/></svg>
+      </div>
+      <div class="support-copy">
+        <div class="eyebrow">Support the work</div>
+        <h2 id="supportTitle">Buy Pratyush a chai</h2>
+        <p>If this treatise has been useful to you, you can support its upkeep with a cup of chai. Every contribution helps keep the mathematics free and the next edition coming.</p>
+      </div>
+      <a class="btn btn-support" href="https://www.buymeachai.in/pratyush" target="_blank" rel="noopener noreferrer">
+        Buy a chai
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M8 7h9v9"/></svg>
+      </a>
+    </div>
   </div>
 </section>
 
@@ -75,16 +97,17 @@
   <div class="modal-box">
     <div class="modal-input">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg>
-      <input id="searchInput" type="text" placeholder="Search 22 chapters, 720 problems, every proof…" autocomplete="off" spellcheck="false">
+      <input id="searchInput" type="text" placeholder="Search 22 chapters, 720 worked solutions, every proof…" autocomplete="off" spellcheck="false">
       <button class="icon-btn" data-search-close aria-label="Close">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
       </button>
     </div>
-    <div class="modal-results" id="searchResults"></div>
+    <div class="modal-results" id="searchResults" aria-live="polite"></div>
     <div class="modal-foot">
       <span><kbd>↑</kbd><kbd>↓</kbd> navigate</span>
       <span><kbd>↵</kbd> open</span>
       <span><kbd>esc</kbd> close</span>
+      <span style="margin-left:auto" id="searchFoot"></span>
     </div>
   </div>
 </div>

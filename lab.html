@@ -25,6 +25,10 @@
       <a href="glossary.html">Glossary</a>
     </nav>
     <div class="nav-tools">
+      <a class="nav-support" href="https://www.buymeachai.in/pratyush" target="_blank" rel="noopener noreferrer" title="Buy Pratyush a chai">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 9h11v4.5a5.5 5.5 0 01-5.5 5.5h0A5.5 5.5 0 015 13.5V9z"/><path d="M16 10.5h1.8a2.7 2.7 0 010 5.4H16"/><path d="M4 21h14"/><path d="M9 6c0-1 1-1.4 1-2.4M13 6c0-1 1-1.4 1-2.4"/></svg>
+        <span>Buy a chai</span>
+      </a>
       <button class="search-trigger" data-search-open>
         <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg>
         <span>Search</span><kbd>/</kbd>
@@ -34,28 +38,26 @@
   </div>
 </header>
 
-<section class="section-tight" style="padding-bottom:0;padding-top:calc(var(--nav-h) + 26px)">
+<section class="page-head">
   <div class="wrap">
     <div class="eyebrow">Interactive</div>
-    <h1 style="font-size:clamp(1.8rem,1.4rem+1.6vw,2.6rem);font-weight:400;margin-bottom:8px">
-      The Math Lab
-    </h1>
-    <p class="lede" style="max-width:64ch;margin-bottom:22px;font-size:1rem">
+    <h1>The Math Lab</h1>
+    <p class="lede">
       Six working instruments. Everything is computed live in your browser — no
       server, no plotting service, no approximation of the approximation.
     </p>
-    <div class="tabs" id="labTabs">
-      <button class="tab on" data-tab="plot">Function Plotter</button>
-      <button class="tab" data-tab="riemann">Riemann Sums</button>
-      <button class="tab" data-tab="descent">Gradient Descent</button>
-      <button class="tab" data-tab="option">Option Pricing</button>
-      <button class="tab" data-tab="prob">Probability &amp; CLT</button>
-      <button class="tab" data-tab="linalg">Linear Algebra</button>
+    <div class="tabs" id="labTabs" role="tablist" aria-label="Math Lab instruments">
+      <button class="tab on" data-tab="plot" role="tab" aria-selected="true">Function Plotter</button>
+      <button class="tab" data-tab="riemann" role="tab" aria-selected="false">Riemann Sums</button>
+      <button class="tab" data-tab="descent" role="tab" aria-selected="false">Gradient Descent</button>
+      <button class="tab" data-tab="option" role="tab" aria-selected="false">Option Pricing</button>
+      <button class="tab" data-tab="prob" role="tab" aria-selected="false">Probability &amp; CLT</button>
+      <button class="tab" data-tab="linalg" role="tab" aria-selected="false">Linear Algebra</button>
     </div>
   </div>
 </section>
 
-<section class="section" style="padding-top:14px;padding-bottom:40px">
+<section class="section" style="padding-top:16px;padding-bottom:40px">
   <div class="wrap">
     <div class="lab-grid">
 
@@ -287,6 +289,26 @@
   </div>
 </section>
 
+<!-- ============================================================ SUPPORT -->
+<section class="support-band" aria-labelledby="supportTitle">
+  <div class="wrap">
+    <div class="support-inner">
+      <div class="support-icon" aria-hidden="true">
+        <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M11 19h21v9.5A10.5 10.5 0 0119.5 39h-1A10.5 10.5 0 018 28.5V19z"/><path d="M32 21.5h3.2a5.3 5.3 0 010 10.6H32"/><path d="M7 43h30"/><path d="M17 13.5c0-2 2-2.8 2-4.8M24 13.5c0-2 2-2.8 2-4.8"/></svg>
+      </div>
+      <div class="support-copy">
+        <div class="eyebrow">Support the work</div>
+        <h2 id="supportTitle">Buy Pratyush a chai</h2>
+        <p>If this treatise has been useful to you, you can support its upkeep with a cup of chai. Every contribution helps keep the mathematics free and the next edition coming.</p>
+      </div>
+      <a class="btn btn-support" href="https://www.buymeachai.in/pratyush" target="_blank" rel="noopener noreferrer">
+        Buy a chai
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M8 7h9v9"/></svg>
+      </a>
+    </div>
+  </div>
+</section>
+
 <footer class="footer">
   <div class="wrap">
     <div class="foot-bottom" style="margin:0;border:0">
@@ -296,7 +318,27 @@
   </div>
 </footer>
 
+<div class="modal" id="searchModal">
+  <div class="modal-box">
+    <div class="modal-input">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg>
+      <input id="searchInput" type="text" placeholder="Search 22 chapters, 720 worked solutions, every proof…" autocomplete="off" spellcheck="false">
+      <button class="icon-btn" data-search-close aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div class="modal-results" id="searchResults" aria-live="polite"></div>
+    <div class="modal-foot">
+      <span><kbd>↑</kbd><kbd>↓</kbd> navigate</span>
+      <span><kbd>↵</kbd> open</span>
+      <span><kbd>esc</kbd> close</span>
+      <span style="margin-left:auto" id="searchFoot"></span>
+    </div>
+  </div>
+</div>
+
 <script src="assets/js/expr.js"></script>
+<script src="assets/data/treatise.js"></script>
 <script src="assets/js/app.js"></script>
 <script src="assets/js/lab.js"></script>
 </body>

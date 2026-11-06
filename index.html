@@ -5,13 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#05080f">
 <title>MATHEMATICA — From Foundations to Deep Learning &amp; Quant Finance</title>
-<meta name="description" content="The Unabridged Four-Volume Mathematical Treatise: 22 chapters, 115 worked examples, 21 formal proofs and 720 fully solved problems — from axiomatic set theory to Itô calculus, Transformers and Black-Scholes. Read it, search it, and play with it in the interactive math lab.">
+<meta name="description" content="The Unabridged Four-Volume Mathematical Treatise: 22 chapters, 115 worked examples, 21 theorem proofs and 720 worked solutions (115 examples + 605 graded problems) — from axiomatic set theory to Itô calculus, Transformers and Black-Scholes. Read it, search it, and play with it in the interactive math lab.">
 <link rel="stylesheet" href="assets/fonts/fonts.css">
 <link rel="stylesheet" href="assets/katex/katex.min.css">
 <link rel="stylesheet" href="assets/css/main.css">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23f0b458'/%3E%3Ctext x='32' y='46' font-size='42' font-family='Georgia,serif' text-anchor='middle' fill='%230a0f1a'%3E%E2%88%AB%3C/text%3E%3C/svg%3E">
 </head>
-<body>
+<body class="home-page">
 
 <!-- ================================================================ NAV -->
 <header class="nav">
@@ -29,6 +29,10 @@
       <a href="reader.html">Read</a>
     </nav>
     <div class="nav-tools">
+      <a class="nav-support" href="https://www.buymeachai.in/pratyush" target="_blank" rel="noopener noreferrer" title="Buy Pratyush a chai">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 9h11v4.5a5.5 5.5 0 01-5.5 5.5h0A5.5 5.5 0 015 13.5V9z"/><path d="M16 10.5h1.8a2.7 2.7 0 010 5.4H16"/><path d="M4 21h14"/><path d="M9 6c0-1 1-1.4 1-2.4M13 6c0-1 1-1.4 1-2.4"/></svg>
+        <span>Buy a chai</span>
+      </a>
       <button class="search-trigger" data-search-open>
         <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg>
         <span>Search</span>
@@ -40,33 +44,53 @@
 </header>
 
 <!-- =============================================================== HERO -->
-<section class="hero">
-  <div class="hero-aurora"></div>
-  <canvas id="heroGrid"></canvas>
-  <canvas id="heroCanvas"></canvas>
-  <canvas id="heroTrail"></canvas>
+<section class="hero" id="top">
   <div class="hero-inner">
-    <div class="wrap">
+    <div class="wrap hero-shell">
       <div class="hero-copy">
-        <div class="eyebrow">Four Volumes · 22 Chapters · 280 Pages</div>
-        <h1>Mathe<span class="gold">matica</span><br><span class="glyph">∀ x ∃ y</span></h1>
+        <div class="eyebrow hero-eyebrow">A self-contained mathematical treatise</div>
+        <h1>Mathe<span class="gold">matica</span></h1>
         <p class="hero-sub">
-          From axiomatic set theory, conic sections and differential calculus to
-          spectral SVD, Itô calculus, Black–Scholes, Transformers and
-          reinforcement learning — one continuous, proof-driven arc.
+          A complete, proof-driven arc from axiomatic set theory and conic
+          sections to spectral theory, Itô calculus, Transformers and
+          quantitative finance.
         </p>
         <div class="hero-cta">
-          <a class="btn btn-primary" href="reader.html">
+          <a class="btn btn-primary btn-lg" href="reader.html">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4.5A2.5 2.5 0 016.5 2H20v18H6.5A2.5 2.5 0 004 22z"/><path d="M4 17.5A2.5 2.5 0 016.5 15H20"/></svg>
             Begin Reading
           </a>
-          <a class="btn btn-ghost" href="lab.html">
+          <a class="btn btn-ghost btn-lg" href="lab.html">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20h18M6 20V10M11 20V4M16 20v-7M21 20v-4"/></svg>
             Open the Math Lab
           </a>
         </div>
-        <div class="stat-strip reveal" id="statStrip"></div>
+        <div class="hero-notes">
+          <span><i aria-hidden="true"></i>No prerequisites</span>
+          <span><i aria-hidden="true"></i>Fully searchable</span>
+          <span><i aria-hidden="true"></i>Offline-ready</span>
+          <a class="hero-support" href="https://www.buymeachai.in/pratyush" target="_blank" rel="noopener noreferrer">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 9h11v4.5a5.5 5.5 0 01-5.5 5.5h0A5.5 5.5 0 015 13.5V9z"/><path d="M16 10.5h1.8a2.7 2.7 0 010 5.4H16"/><path d="M4 21h14"/><path d="M9 6c0-1 1-1.4 1-2.4M13 6c0-1 1-1.4 1-2.4"/></svg>
+            Buy Pratyush a chai
+            <span aria-hidden="true">↗</span>
+          </a>
+        </div>
       </div>
+
+      <nav class="hero-contents" aria-label="Table of contents">
+        <div class="hero-contents-head">
+          <span>Contents</span>
+          <span>Four volumes</span>
+        </div>
+        <ol class="hero-index" id="heroIndex"></ol>
+        <div class="hero-contents-foot">
+          <span id="heroIndexMeta"></span>
+          <a href="reader.html">Read the treatise <span aria-hidden="true">→</span></a>
+        </div>
+      </nav>
+    </div>
+    <div class="wrap hero-stats">
+      <div class="stat-strip" id="statStrip"></div>
     </div>
   </div>
 </section>
@@ -74,65 +98,87 @@
 <!-- ============================================================ VOLUMES -->
 <section class="section" id="volumes">
   <div class="wrap">
-    <div class="eyebrow reveal">The Arc</div>
-    <h2 class="reveal" style="font-size:clamp(1.9rem,1.4rem+1.8vw,2.9rem);font-weight:400;max-width:18ch">
-      Four volumes, one unbroken thread of reasoning
-    </h2>
-    <p class="lede reveal" style="max-width:62ch;margin-bottom:44px">
-      No prerequisites. Every definition is stated before it is used, every
-      identity is proved before it is applied, and every result is immediately
-      pressed into service on the next page.
-    </p>
-    <div class="grid g-2" id="volumeGrid"></div>
+    <div class="section-head">
+      <div>
+        <div class="eyebrow reveal">The arc</div>
+        <h2 class="reveal">Four volumes.<br>One unbroken thread.</h2>
+      </div>
+      <p class="lede reveal">
+        No prerequisites. Every definition is stated before it is used, every
+        identity is proved before it is applied, and every result is pressed
+        into service on the next page.
+      </p>
+    </div>
+    <div class="vol-grid" id="volumeGrid"></div>
   </div>
 </section>
 
 <!-- =========================================================== FEATURES -->
 <section class="section-tight" id="features">
   <div class="wrap">
-    <div class="eyebrow reveal">Why it is different</div>
-    <div class="grid g-3 reveal" id="featureGrid"></div>
+    <div class="section-head section-head-compact">
+      <div>
+        <div class="eyebrow reveal">Why it works</div>
+        <h2 class="reveal">Built like a reference.<br>Read like a story.</h2>
+      </div>
+      <p class="lede reveal">
+        The rigour of a textbook, the momentum of a narrative, and the tools of
+        a modern interactive edition.
+      </p>
+    </div>
+    <div class="feature-grid" id="featureGrid"></div>
   </div>
 </section>
 
 <!-- =========================================================== CHAPTERS -->
 <section class="section" id="chapters">
   <div class="wrap">
-    <div class="eyebrow reveal">The Whole Treatise</div>
-    <h2 class="reveal" style="font-size:clamp(1.9rem,1.4rem+1.8vw,2.9rem);font-weight:400">
-      Twenty-two chapters, indexed and searchable
-    </h2>
-    <p class="lede reveal" style="max-width:62ch;margin-bottom:30px">
-      Filter by volume. Every chapter is fully typeset with live mathematics —
-      hover any formula to copy its LaTeX.
-    </p>
+    <div class="section-head">
+      <div>
+        <div class="eyebrow reveal">The whole treatise</div>
+        <h2 class="reveal">Every chapter.<br>One click away.</h2>
+      </div>
+      <p class="lede reveal">
+        Filter by volume. Every chapter is fully typeset with live mathematics
+        and a complete set of solved problems.
+      </p>
+    </div>
     <div class="ch-toolbar reveal">
       <button class="chip on" data-vol="all">All</button>
       <button class="chip" data-vol="1">Vol I</button>
       <button class="chip" data-vol="2">Vol II</button>
       <button class="chip" data-vol="3">Vol III</button>
       <button class="chip" data-vol="4">Vol IV</button>
-      <span style="flex:1"></span>
       <span class="badge" id="chCount"></span>
     </div>
-    <div class="grid g-3" id="chapterGrid"></div>
+    <div class="chapter-index" id="chapterGrid"></div>
   </div>
 </section>
 
 <!-- ============================================================= INSIDE -->
 <section class="section" id="inside">
   <div class="wrap">
-    <div class="eyebrow reveal">Inside the Treatise</div>
-    <h2 class="reveal" style="font-size:clamp(1.9rem,1.4rem+1.8vw,2.9rem);font-weight:400;max-width:20ch">
-      Read it the way a mathematician reads
-    </h2>
-    <p class="lede reveal" style="max-width:60ch;margin-bottom:40px">
-      Theorems unfold into their proofs. Worked examples reveal one step at a
-      time. Graded problems let you attempt first and check afterwards.
-    </p>
-    <div class="grid g-2" style="align-items:start">
-      <div class="panel panel-pad reveal" id="liveSample"></div>
-      <div class="reveal" id="featureDetail"></div>
+    <div class="section-head">
+      <div>
+        <div class="eyebrow reveal">Inside the treatise</div>
+        <h2 class="reveal">Read it the way<br>a mathematician reads.</h2>
+      </div>
+      <p class="lede reveal">
+        Every statement stays in view. Proofs and worked solutions fold away
+        beneath it, so you can attempt the question first — then check the full
+        derivation step by step.
+      </p>
+    </div>
+    <div class="preview-shell reveal">
+      <div class="preview-chrome">
+        <span class="pv-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="pv-path">reader.html <b>/</b> Chapter 1</span>
+        <span class="sample-live"><span class="pulse" aria-hidden="true"></span>Live KaTeX</span>
+      </div>
+      <div class="preview-grid">
+        <div class="preview-main" id="liveSample"></div>
+        <aside class="preview-aside" id="featureDetail"></aside>
+      </div>
     </div>
   </div>
 </section>
@@ -140,19 +186,44 @@
 <!-- ================================================================ LAB -->
 <section class="section-tight">
   <div class="wrap">
-    <div class="panel panel-pad reveal" style="display:grid;grid-template-columns:minmax(0,1fr) auto;gap:34px;align-items:center">
-      <div>
+    <div class="lab-cta reveal">
+      <div class="lab-cta-copy">
         <div class="eyebrow">Interactive</div>
-        <h2 style="font-size:clamp(1.6rem,1.3rem+1.2vw,2.3rem);font-weight:400;margin-bottom:10px">
-          A laboratory, not a slideshow
-        </h2>
-        <p class="lede" style="max-width:56ch">
+        <h2>A laboratory,<br>not a slideshow.</h2>
+        <p class="lede">
           Plot functions, watch Riemann sums converge, minimise a convex
           objective by gradient descent, price an option with Monte Carlo, and
           sample from the standard normal — all in the browser, all real-time.
         </p>
+        <div class="lab-tags" aria-label="Lab topics">
+          <span>Riemann sums</span><span>Gradient descent</span>
+          <span>Monte Carlo</span><span>Distributions</span>
+        </div>
       </div>
-      <a class="btn btn-primary" href="lab.html">Enter the Lab</a>
+      <a class="btn btn-primary btn-lg" href="lab.html">
+        Enter the Lab
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ SUPPORT -->
+<section class="support-band" aria-labelledby="supportTitle">
+  <div class="wrap">
+    <div class="support-inner">
+      <div class="support-icon" aria-hidden="true">
+        <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M11 19h21v9.5A10.5 10.5 0 0119.5 39h-1A10.5 10.5 0 018 28.5V19z"/><path d="M32 21.5h3.2a5.3 5.3 0 010 10.6H32"/><path d="M7 43h30"/><path d="M17 13.5c0-2 2-2.8 2-4.8M24 13.5c0-2 2-2.8 2-4.8"/></svg>
+      </div>
+      <div class="support-copy">
+        <div class="eyebrow">Support the work</div>
+        <h2 id="supportTitle">Buy Pratyush a chai</h2>
+        <p>If this treatise has been useful to you, you can support its upkeep with a cup of chai. Every contribution helps keep the mathematics free and the next edition coming.</p>
+      </div>
+      <a class="btn btn-support" href="https://www.buymeachai.in/pratyush" target="_blank" rel="noopener noreferrer">
+        Buy a chai
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M8 7h9v9"/></svg>
+      </a>
     </div>
   </div>
 </section>
@@ -166,8 +237,8 @@
           <span class="brand-mark">&sum;</span><span><b>MATHEMATICA</b></span>
         </a>
         <p style="color:var(--fg-mute);font-size:14px;max-width:40ch;line-height:1.6">
-          The Unabridged Four-Volume Mathematical Treatise and
-          720-Problem Solved Compendium.
+          The Unabridged Four-Volume Mathematical Treatise: 115 worked
+          examples, 605 graded problems, and 21 theorem–proof blocks.
         </p>
       </div>
       <div>
@@ -186,9 +257,9 @@
       </div>
       <div>
         <h5>Colophon</h5>
-        <a href="#" onclick="return false">Set in Newsreader &amp; KaTeX</a>
-        <a href="#" onclick="return false">22 chapters · 280 pages</a>
-        <a href="#" onclick="return false">Open source &amp; offline-ready</a>
+        <span class="foot-note">Set in Newsreader &amp; KaTeX</span>
+        <span class="foot-note">22 chapters · 280 pages</span>
+        <span class="foot-note">Self-contained &amp; offline-ready</span>
       </div>
     </div>
     <div class="foot-bottom">
@@ -203,12 +274,12 @@
   <div class="modal-box">
     <div class="modal-input">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></svg>
-      <input id="searchInput" type="text" placeholder="Search 22 chapters, 720 problems, every proof…" autocomplete="off" spellcheck="false">
+      <input id="searchInput" type="text" placeholder="Search 22 chapters, 720 worked solutions, every proof…" autocomplete="off" spellcheck="false">
       <button class="icon-btn" data-search-close aria-label="Close">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
       </button>
     </div>
-    <div class="modal-results" id="searchResults"></div>
+    <div class="modal-results" id="searchResults" aria-live="polite"></div>
     <div class="modal-foot">
       <span><kbd>↑</kbd><kbd>↓</kbd> navigate</span>
       <span><kbd>↵</kbd> open</span>

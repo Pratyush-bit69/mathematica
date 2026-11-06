@@ -7,301 +7,15 @@
   const $ = (s, r) => (r || document).querySelector(s);
   const $$ = (s, r) => Array.prototype.slice.call((r || document).querySelectorAll(s));
   const T = window.TREATISE;
+  const M = window.Mathematica || {};
+  const titleParts = M.titleParts || function (t) {
+    return { title: String(t || ""), deck: "" };
+  };
 
   function esc(s) {
     return String(s == null ? "" : s)
       .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;");
-  }
-
-  /* ====================================================== hero canvas */
-  /* Two stacked layers:
-     1. a background canvas redrawn every frame — aurora, a warped grid,
-        rotating epitrochoid curves with a soft glow and drifting symbols;
-     2. a trail canvas that is never cleared but slowly erased, so particles
-        trace luminous Lissajous loops across the hero.                      */
-  function heroCanvas() {
-    const cv = $("#heroCanvas");
-    const tc = $("#heroTrail");
-    if (!cv || !tc) return;
-    const ctx = cv.getContext("2d");
-    const tctx = tc.getContext("2d");
-    let W = 0, H = 0, dpr = 1;
-    let raf = null;
-    let running = true;
-    let particles = [];
-    let glyphs = [];
-    let pointer = { x: 0, y: 0, tx: 0, ty: 0 };
-
-    const GLYPHS = ["∫", "∑", "∏", "π", "√", "∂", "∇", "∞", "λ", "θ", "μ",
-      "Δ", "Σ", "φ", "ψ", "ω", "∈", "⇒", "ℝ", "ℂ", "α", "β", "γ", "δ", "ε",
-      "ζ", "ℤ", "ℚ", "∎", "≠", "≈", "≜"];
-
-    const CURVES = [
-      { a: 3, b: 2, r: 0.30, sp: 0.150, w: 1.5, c: "247,192,94" },
-      { a: 5, b: 4, r: 0.38, sp: -0.110, w: 1.2, c: "139,123,247" },
-      { a: 7, b: 5, r: 0.24, sp: 0.195, w: 1.1, c: "94,234,212" },
-      { a: 2, b: 3, r: 0.44, sp: -0.075, w: 0.9, c: "244,190,120" }
-    ];
-
-    const LOOPS = [
-      { a: 3, b: 2, k: 0.30 }, { a: 5, b: 4, k: 0.38 },
-      { a: 7, b: 5, k: 0.24 }, { a: 4, b: 3, k: 0.42 },
-      { a: 6, b: 5, k: 0.34 }, { a: 5, b: 3, k: 0.27 },
-      { a: 9, b: 7, k: 0.20 }, { a: 8, b: 5, k: 0.36 }
-    ];
-
-    function resize() {
-      dpr = Math.min(window.devicePixelRatio || 1, 2);
-      const r = cv.getBoundingClientRect();
-      W = r.width; H = r.height;
-      [cv, tc].forEach(function (c) {
-        c.width = Math.round(W * dpr);
-        c.height = Math.round(H * dpr);
-        c.getContext("2d").setTransform(dpr, 0, 0, dpr, 0, 0);
-      });
-      tctx.clearRect(0, 0, W, H);
-      buildStatics();
-      seed();
-    }
-
-    /* --- static layers, rasterised once and blitted afterwards ------- */
-    const gridCv = $("#heroGrid");
-    const glyphSprites = {}; // one small canvas per glyph
-
-    function buildStatics() {
-      // the warped polar grid is painted once; CSS turns the whole layer
-      if (!gridCv) return;
-      gridCv.width = Math.round(W * dpr);
-      gridCv.height = Math.round(H * dpr);
-      const g = gridCv.getContext("2d");
-      g.setTransform(dpr, 0, 0, dpr, 0, 0);
-      const cx = focus(), cy = H * 0.5, R = Math.min(W, H);
-      g.strokeStyle = "rgba(148,176,214,0.11)";
-      g.lineWidth = 1;
-      g.beginPath();
-      for (let ring = 1; ring <= 8; ring++) {
-        for (let a = 0; a <= 64; a++) {
-          const th = (a / 64) * Math.PI * 2;
-          const rr = (ring / 8) * R * 0.98;
-          const warp = 1 + 0.15 * Math.sin(th * 3) * Math.cos(rr * 0.012);
-          const x = cx + Math.cos(th) * rr * warp;
-          const y = cy + Math.sin(th) * rr * warp * 0.74;
-          if (a === 0) g.moveTo(x, y); else g.lineTo(x, y);
-        }
-      }
-      for (let sp = 0; sp < 20; sp++) {
-        const th = (sp / 20) * Math.PI * 2;
-        for (let k = 0; k <= 30; k++) {
-          const rr = (k / 30) * R * 0.98;
-          const warp = 1 + 0.15 * Math.sin(th * 3) * Math.cos(rr * 0.012);
-          const x = cx + Math.cos(th) * rr * warp;
-          const y = cy + Math.sin(th) * rr * warp * 0.74;
-          if (k === 0) g.moveTo(x, y); else g.lineTo(x, y);
-        }
-      }
-      g.stroke();
-    }
-
-    function glyphSprite(ch, size) {
-      const key = ch + "|" + size;
-      if (glyphSprites[key]) return glyphSprites[key];
-      const c = document.createElement("canvas");
-      const pad = 6;
-      c.width = c.height = Math.ceil(size + pad * 2);
-      const g = c.getContext("2d");
-      g.font = size + "px 'KaTeX_Main', 'Newsreader', Georgia, serif";
-      g.textAlign = "center";
-      g.textBaseline = "middle";
-      g.fillStyle = "#fff";
-      g.fillText(ch, c.width / 2, c.height / 2);
-      glyphSprites[key] = c;
-      return c;
-    }
-
-    /* --- pre-rendered glow sprites (one per tint) --------------------- */
-    const SPRITES = {};
-    function sprite(rgb) {
-      if (SPRITES[rgb]) return SPRITES[rgb];
-      const s = 64;
-      const c = document.createElement("canvas");
-      c.width = c.height = s;
-      const g = c.getContext("2d");
-      const grd = g.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2);
-      grd.addColorStop(0, "rgba(" + rgb + ",1)");
-      grd.addColorStop(0.18, "rgba(" + rgb + ",0.42)");
-      grd.addColorStop(0.45, "rgba(" + rgb + ",0.12)");
-      grd.addColorStop(1, "rgba(" + rgb + ",0)");
-      g.fillStyle = grd;
-      g.fillRect(0, 0, s, s);
-      SPRITES[rgb] = c;
-      return c;
-    }
-    ["247,192,94", "139,123,247", "94,234,212"].forEach(sprite);
-
-    function seed() {
-      const small = W < 760;
-      const n = small ? 54 : 132;
-      particles = [];
-      for (let i = 0; i < n; i++) {
-        const loop = LOOPS[i % LOOPS.length];
-        particles.push({
-          loop: loop,
-          ph: Math.random() * Math.PI * 2,
-          sp: 0.16 + Math.random() * 0.22,
-          k: loop.k * (0.62 + Math.random() * 0.55),
-          xo: (Math.random() - 0.5) * 0.5,
-          yo: (Math.random() - 0.5) * 0.5,
-          sz: 0.55 + Math.random() * 1.5,
-          a: 0.10 + Math.random() * 0.34,
-          hue: Math.random() < 0.62 ? "247,192,94"
-            : (Math.random() < 0.6 ? "139,123,247" : "94,234,212")
-        });
-      }
-      const g = small ? 9 : 18;
-      glyphs = [];
-      for (let i = 0; i < g; i++) {
-        glyphs.push({
-          x: Math.random() * W,
-          y: Math.random() * H,
-          ch: GLYPHS[(Math.random() * GLYPHS.length) | 0],
-          size: 14 + Math.random() * 30,
-          a: 0.035 + Math.random() * 0.075,
-          vy: -0.05 - Math.random() * 0.13,
-          vx: (Math.random() - 0.5) * 0.08,
-          ph: Math.random() * Math.PI * 2,
-          rot: (Math.random() - 0.5) * 0.4
-        });
-      }
-    }
-
-    /* the visual centre of the field — right of the headline on desktop */
-    function focus() {
-      return W < 760 ? W * 0.5 : W * 0.715;
-    }
-
-    function glow(x, y, r, rgb, a) {
-      const s = sprite(rgb);
-      tctx.globalAlpha = a;
-      tctx.drawImage(s, x - r, y - r, r * 2, r * 2);
-      tctx.globalAlpha = 1;
-    }
-
-    function drawTrails(t) {
-      // slowly erase what is already there so the paths leave fading trails
-      tctx.globalCompositeOperation = "destination-out";
-      tctx.fillStyle = "rgba(0,0,0,0.030)";
-      tctx.fillRect(0, 0, W, H);
-      tctx.globalCompositeOperation = "lighter";
-
-      const cx = focus() + pointer.x * 16;
-      const cy = H * 0.5 + pointer.y * 12;
-      const R = Math.min(W, H) * 0.5;
-
-      for (let i = 0; i < particles.length; i++) {
-        const p = particles[i];
-        const th = t * p.sp + p.ph;
-        const lx = Math.sin(p.loop.a * th);
-        const ly = Math.sin(p.loop.b * th);
-        const x = cx + (lx + p.xo) * p.k * R * 2;
-        const y = cy + (ly + p.yo) * p.k * R * 1.25;
-        if (x < -40 || x > W + 40 || y < -40 || y > H + 40) continue;
-        const tw = 0.55 + 0.45 * Math.sin(t * 0.0021 * (1 + p.sp) + p.ph);
-        glow(x, y, p.sz * 6.5, p.hue, 0.10 * tw * p.a * 2.2);
-        tctx.beginPath();
-        tctx.arc(x, y, p.sz * tw * 0.85, 0, Math.PI * 2);
-        tctx.fillStyle = "rgba(" + p.hue + "," + (0.34 + 0.55 * p.a) * tw + ")";
-        tctx.fill();
-      }
-      tctx.globalCompositeOperation = "source-over";
-    }
-
-    function drawBackground(t) {
-      ctx.clearRect(0, 0, W, H);
-      const cx = focus() + pointer.x * 16;
-      const cy = H * 0.5 + pointer.y * 12;
-      const R = Math.min(W, H);
-
-      // ---- the warped grid lives on its own static layer
-
-      // ---- rotating epitrochoid curves
-      CURVES.forEach(function (cv2) {
-        const rot = t * 0.00006 * cv2.sp * 1000;
-        const grad = ctx.createLinearGradient(cx - R, cy - R, cx + R, cy + R);
-        grad.addColorStop(0, "rgba(" + cv2.c + ",0)");
-        grad.addColorStop(0.3, "rgba(" + cv2.c + ",0.40)");
-        grad.addColorStop(0.64, "rgba(" + cv2.c + ",0.14)");
-        grad.addColorStop(1, "rgba(" + cv2.c + ",0)");
-        ctx.beginPath();
-        for (let i = 0; i <= 150; i++) {
-          const th = (i / 150) * Math.PI * 2;
-          const rr = Math.cos(cv2.a * th + rot * 3) * 0.62 +
-            Math.cos((cv2.a - cv2.b) * th - rot * 2) * 0.38;
-          const x = cx + rr * Math.cos(th + rot) * R * cv2.r * 2.1;
-          const y = cy + rr * Math.sin(th + rot) * R * cv2.r * 1.55;
-          if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-        }
-        ctx.closePath();
-        ctx.strokeStyle = grad;
-        ctx.lineWidth = cv2.w;
-        ctx.stroke();
-      });
-
-      // ---- drifting symbols
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      for (let i = 0; i < glyphs.length; i++) {
-        const g = glyphs[i];
-        g.y += g.vy; g.x += g.vx; g.ph += 0.011;
-        if (g.y < -70) { g.y = H + 50; g.x = Math.random() * W; }
-        if (g.x < -70) g.x = W + 50;
-        if (g.x > W + 70) g.x = -50;
-        const pulse = 0.45 + 0.55 * Math.sin(g.ph);
-        const near = Math.max(0, 1 - Math.abs(g.x - cx) / (W * 0.6));
-        const sp = glyphSprite(g.ch, Math.round(g.size));
-        ctx.globalAlpha = g.a * pulse * (0.35 + near);
-        ctx.drawImage(sp, g.x - sp.width / 2, g.y - sp.height / 2);
-      }
-      ctx.globalAlpha = 1;
-    }
-
-    function frame(ts) {
-      if (!running) return;
-      const t = ts || 0;
-      pointer.x += (pointer.tx - pointer.x) * 0.045;
-      pointer.y += (pointer.ty - pointer.y) * 0.045;
-      drawBackground(t);
-      drawTrails(t);
-      raf = requestAnimationFrame(frame);
-    }
-
-    resize();
-    let rt = null;
-    window.addEventListener("resize", function () {
-      clearTimeout(rt);
-      rt = setTimeout(resize, 160);
-    });
-    window.addEventListener("pointermove", function (e) {
-      pointer.tx = (e.clientX / window.innerWidth - 0.5) * 2;
-      pointer.ty = (e.clientY / window.innerHeight - 0.5) * 2;
-    }, { passive: true });
-    raf = requestAnimationFrame(frame);
-
-    document.addEventListener("visibilitychange", function () {
-      if (document.hidden) { running = false; cancelAnimationFrame(raf); }
-      else if (!running) { running = true; raf = requestAnimationFrame(frame); }
-    });
-
-    const io = new IntersectionObserver(function (es) {
-      es.forEach(function (e) {
-        if (!e.isIntersecting && running) {
-          running = false; cancelAnimationFrame(raf);
-        } else if (e.isIntersecting && !running) {
-          running = true; raf = requestAnimationFrame(frame);
-        }
-      });
-    });
-    io.observe(cv);
   }
 
   /* ======================================================== home data */
@@ -313,7 +27,7 @@
       [s.sections, "Sections"],
       [s.examples, "Examples"],
       [s.theorems, "Proofs"],
-      [solved, "Solved"],
+      [solved, "Solutions"],
       [s.pages, "Pages"]
     ];
     const strip = $("#statStrip");
@@ -325,7 +39,7 @@
     }
     const f = $("#footStats");
     if (f) f.textContent = s.chapters + " chapters · " + solved +
-      " solved problems · " + s.pages + " pages";
+      " worked solutions · " + s.pages + " pages";
   }
 
   function countUp(root) {
@@ -368,20 +82,109 @@
     return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">' + d + "</svg>";
   };
 
+  const VOLUME_OUTCOMES = {
+    1: "Write clean proofs, work fluently in the complex plane, count without casework, and compute with matrices.",
+    2: "Move between coordinates, conics and calculus, then solve first-order ODEs and area problems with confidence.",
+    3: "Prove identities, reason geometrically in three dimensions, solve linear programmes, and model uncertainty.",
+    4: "Derive and implement the mathematics behind modern machine learning and quantitative finance."
+  };
+
+  const HERO_VOLUMES = {
+    1: { name: "Foundations", note: "Sets, proofs, series, linear algebra, spectral theory" },
+    2: { name: "Geometry & Calculus", note: "Conics, limits, derivatives, integrals, ODEs and PDEs" },
+    3: { name: "Trigonometry & Probability", note: "Identities, vectors, distributions, Markov chains" },
+    4: { name: "AI & Quantitative Finance", note: "Optimisation, Itô calculus, deep learning, markets" }
+  };
+
+  function renderHeroIndex() {
+    const root = $("#heroIndex");
+    if (!root) return;
+    const pad = function (n) { return String(n).padStart(2, "0"); };
+    root.innerHTML = T.volumes.map(function (v) {
+      const all = v.chapters.map(function (num) {
+        return T.chapters.filter(function (c) { return c.num === num; })[0];
+      }).filter(Boolean);
+      const info = HERO_VOLUMES[v.id] || {};
+      const first = all[0];
+      const last = all[all.length - 1];
+      const range = first && last
+        ? pad(first.num) + (first === last ? "" : "–" + pad(last.num))
+        : "";
+      return '<li class="hero-vol">' +
+        '<a href="#vol-' + v.id + '" aria-label="Volume ' + v.roman + ", " +
+          esc(info.name || v.name) + ": " + esc(info.note || "") +
+          ". Chapters " + range + '.">' +
+          '<span class="hero-vol-no" aria-hidden="true">' + v.roman + "</span>" +
+          '<span class="hero-vol-copy">' +
+            '<span class="hero-vol-name">' + esc(info.name || v.name) + "</span>" +
+            '<span class="hero-vol-note">' + esc(info.note || "") + "</span>" +
+          "</span>" +
+          '<span class="hero-vol-meta">' +
+            '<span class="hero-vol-range">' + range + "</span>" +
+          "</span>" +
+          '<span class="hero-vol-arrow" aria-hidden="true">→</span>' +
+        "</a></li>";
+    }).join("");
+    const meta = $("#heroIndexMeta");
+    if (meta && T.meta.stats) {
+      meta.textContent = T.meta.stats.chapters + " chapters · " + T.meta.stats.sections + " sections";
+    }
+  }
+
   function renderVolumes() {
     const g = $("#volumeGrid");
     if (!g) return;
     g.innerHTML = T.volumes.map(function (v) {
-      const names = v.chapters.map(function (c) {
-        const ch = T.chapters.filter(function (x) { return x.num === c; })[0];
-        return '<a href="reader.html#ch' + c + '" title="' + (ch ? ch.title : "") + '">Ch ' + c + "</a>";
+      const all = v.chapters.map(function (c) {
+        return T.chapters.filter(function (x) { return x.num === c; })[0];
+      }).filter(Boolean);
+      const sections = all.reduce(function (n, ch) {
+        return n + (ch.sections || []).length;
+      }, 0);
+      const tally = { ex: 0, pr: 0, th: 0 };
+      all.forEach(function (ch) {
+        (ch.sections || []).forEach(function (s) {
+          (s.blocks || []).forEach(function (b) {
+            if (b.type === "example") tally.ex++;
+            else if (b.type === "problem" || b.type === "exam") tally.pr++;
+            else if (b.type === "theorem") tally.th++;
+          });
+        });
+      });
+      const shown = all.slice(0, 4);
+      const more = all.length - shown.length;
+      const rows = shown.map(function (ch) {
+        const tp = titleParts(ch.title);
+        return '<li><a href="reader.html#ch' + ch.num + '" title="' + esc(ch.title) + '">' +
+          '<span class="vol-ch">' + String(ch.num).padStart(2, "0") + "</span>" +
+          "<span>" + esc(tp.title) + "</span>" +
+          '<span class="vol-arrow" aria-hidden="true">↗</span></a></li>';
       }).join("");
-      return '<div class="vol reveal">' +
-        '<div class="vol-num">' + v.roman + "</div>" +
-        '<h3>' + v.name + "</h3>" +
-        "<p>" + v.blurb + "</p>" +
-        '<div class="vol-chapters">' + names + "</div>" +
-        "</div>";
+      const moreRow = more > 0
+        ? '<li class="vol-more"><a href="reader.html#ch' + all[shown.length].num + '">' +
+          "+" + more + " more chapter" + (more > 1 ? "s" : "") + ' <span aria-hidden="true">→</span></a></li>'
+        : "";
+      return '<article class="vol reveal" id="vol-' + v.id + '" data-roman="' + v.roman + '">' +
+        '<div class="vol-head">' +
+        '<span class="vol-num">' + v.roman + "</span>" +
+        '<span class="vol-headtext">' +
+        '<span class="vol-kicker">Volume ' + v.roman + "</span>" +
+        '<span class="vol-meta">' + all.length + " chapters · " + sections + " sections</span>" +
+        "</span></div>" +
+        "<h3>" + esc(v.name) + "</h3>" +
+        '<p class="vol-blurb">' + esc(v.blurb) + "</p>" +
+        '<p class="vol-outcome"><b>Outcome</b><span>' + esc(VOLUME_OUTCOMES[v.id] || "") + "</span></p>" +
+        '<ul class="vol-list">' + rows + moreRow + "</ul>" +
+        '<div class="vol-foot">' +
+        '<div class="vol-stats">' +
+        "<span><b>" + sections + "</b> sections</span>" +
+        "<span><b>" + tally.ex + "</b> examples</span>" +
+        "<span><b>" + tally.pr + "</b> problems</span>" +
+        (tally.th ? "<span><b>" + tally.th + "</b> proofs</span>" : "") +
+        "</div>" +
+        '<a class="vol-open" href="reader.html#ch' + v.chapters[0] + '">' +
+        "Explore Volume " + v.roman + ' <span aria-hidden="true">→</span></a>' +
+        "</div></article>";
     }).join("");
   }
 
@@ -389,8 +192,8 @@
     { i: "book", t: "Proof-driven throughout",
       d: "Every theorem states its hypotheses, proves its claim line by line, and is immediately reused.",
       m: "\\text{Theorem } 1.1:\\; (A\\cup B)^{c}=A^{c}\\cap B^{c}" },
-    { i: "check", t: "720 fully solved problems",
-      d: "Graded in four tiers from warm-up drills to PhD-level quant research extensions — with every derivation shown.",
+    { i: "check", t: "720 worked solutions",
+      d: "115 worked examples and 605 graded problems, arranged in four tiers from warm-up drills to PhD-level quant research extensions — with every derivation shown.",
       m: "\\sum_{k=0}^{n}\\binom{n}{k}B_k" },
     { i: "layers", t: "A real arc, not fragments",
       d: "Algebra → Calculus → Trigonometry → Vectors & Probability → Optimisation → Itô → Deep Learning.",
@@ -409,8 +212,9 @@
   function renderFeatures() {
     const g = $("#featureGrid");
     if (!g) return;
-    g.innerHTML = FEATURES.map(function (f) {
-      return '<div class="card feat reveal">' +
+    g.innerHTML = FEATURES.map(function (f, i) {
+      return '<div class="card feat feat-' + (i + 1) + ' reveal">' +
+        '<span class="feat-no" aria-hidden="true">' + String(i + 1).padStart(2, "0") + "</span>" +
         '<div class="feat-icon">' + svg(ICONS[f.i]) + "</div>" +
         "<h3>" + f.t + "</h3><p>" + f.d + "</p>" +
         '<div class="fmath" data-tex="' + f.m.replace(/"/g, "&quot;") + '"></div>' +
@@ -435,6 +239,8 @@
     const g = $("#chapterGrid");
     if (!g) return;
     const counts = {};
+    let read = {};
+    try { read = JSON.parse(localStorage.getItem("mathematica:read") || "{}"); } catch (e) { read = {}; }
     T.chapters.forEach(function (c) {
       const n = { ex: 0, pr: 0, th: 0 };
       (c.sections || []).forEach(function (s) {
@@ -447,31 +253,44 @@
       counts[c.num] = n;
     });
 
-    function card(c) {
+    function card(c, isFinal) {
       const n = counts[c.num];
-      const desc = c.sections.length
-        ? c.sections[0].title + " · " + (c.sections.length - 1) + " more"
-        : "";
-      return '<a class="ch-card reveal" data-volume="' + c.volume + '" href="reader.html#ch' + c.num + '">' +
-        '<div class="n">CHAPTER ' + String(c.num).padStart(2, "0") + " · VOL " + ["I", "II", "III", "IV"][c.volume - 1] + "</div>" +
-        "<h3>" + c.title + "</h3>" +
-        "<p>" + desc + "</p>" +
-        '<div class="meta">' +
+      const tp = titleParts(c.title);
+      const first = (c.sections && c.sections[0]) ? c.sections[0] : null;
+      const desc = first ? first.title : "";
+      return '<a class="ch-card reveal' + (read[c.num] ? " is-read" : "") + (isFinal ? " ch-final" : "") + '" data-volume="' + c.volume + '" href="reader.html#ch' + c.num + '">' +
+        '<span class="ch-num" aria-hidden="true">' + String(c.num).padStart(2, "0") + "</span>" +
+        '<span class="ch-body">' +
+        '<span class="ch-meta">' +
+        '<span class="ch-vol">VOL ' + ["I", "II", "III", "IV"][c.volume - 1] + "</span>" +
+        '<span aria-hidden="true">·</span><span>' + c.sections.length + " sections</span>" +
+        (read[c.num] ? '<span class="ch-read">Read</span>' : "") +
+        "</span>" +
+        "<h3>" + esc(tp.title) + "</h3>" +
+        (tp.deck ? '<span class="ch-deck">' + esc(tp.deck) + "</span>" : "") +
+        '<span class="ch-desc">' + esc(desc) + "</span>" +
+        '<span class="ch-stats">' +
         (n.ex ? "<span><b>" + n.ex + "</b> examples</span>" : "") +
         (n.pr ? "<span><b>" + n.pr + "</b> problems</span>" : "") +
         (n.th ? "<span><b>" + n.th + "</b> proof</span>" : "") +
-        "<span><b>" + c.sections.length + "</b> sections</span>" +
-        "</div></a>";
+        "</span></span>" +
+        '<span class="ch-side">' +
+        '<span class="ch-count"><b>' + c.sections.length + "</b><small>sections</small></span>" +
+        '<span class="ch-go" aria-hidden="true">↗</span></span></a>';
     }
     function paint(filter) {
-      g.innerHTML = T.chapters.filter(function (c) {
+      const list = T.chapters.filter(function (c) {
         return filter === "all" || String(c.volume) === filter;
-      }).map(card).join("");
+      });
+      const finalAlone = filter === "all" && list.length % 3 === 1;
+      g.innerHTML = list.map(function (c, i) {
+        return card(c, finalAlone && i === list.length - 1);
+      }).join("");
       $$(".reveal", g).forEach(function (el, i) {
         el.style.transitionDelay = (i % 9) * 40 + "ms";
         requestAnimationFrame(function () { el.classList.add("in"); });
       });
-      $("#chCount").textContent = g.children.length + " chapters";
+      $("#chCount").textContent = g.children.length + " chapter" + (g.children.length === 1 ? "" : "s");
     }
     paint("all");
 
@@ -491,71 +310,203 @@
     const detail = $("#featureDetail");
     if (!box) return;
     const ch = T.chapters[0];
-    let th = null, ex = null, pr = null, prBody = null;
+    let th = null, ex = null, pr = null;
     (ch.sections || []).forEach(function (s) {
       const bl = s.blocks || [];
       bl.forEach(function (b, i) {
         if (b.type === "theorem" && !th) th = b;
         if (b.type === "example" && !ex) ex = b;
-        if (b.type === "problem" && !pr) {
-          pr = b;
-          for (let j = i + 1; j < bl.length; j++) {
-            if (bl[j].type === "question" || bl[j].type === "solution") {
-              prBody = bl[j];
-              break;
-            }
-            if (bl[j].type === "problem" || bl[j].type === "example") break;
-          }
-        }
+        if (b.type === "problem" && !pr) pr = b;
       });
     });
 
-    function renderRuns(runs) {
-      return (runs || []).map(function (r) {
-        if (r.k === "text") return '<span class="tx">' + esc(r.v) + "</span>";
+    function spacedRuns(runs) {
+      return (runs || []).map(function (r, i, all) {
+        if (!r || r.k !== "text") return r;
+        let v = String(r.v == null ? "" : r.v);
+        const prev = all[i - 1];
+        const next = all[i + 1];
+        const nextPunct = next && next.k === "math" &&
+          /^\s*[.,;:!?]\s*$/.test(String(next.latex || ""));
+        if (prev && prev.k !== "text" && prev.k !== "br" && /^[A-Za-z0-9]/.test(v)) v = " " + v;
+        if (prev && prev.k === "math" && /^[.,;:!?]/.test(v)) v = v.replace(/^\s+/, "");
+        if (nextPunct) v = v.replace(/\s+$/, "");
+        else if (next && next.k !== "text" && next.k !== "br" && /[A-Za-z0-9]$/.test(v)) v = v + " ";
+        return Object.assign({}, r, { v: v });
+      });
+    }
+
+    function runsHTML(runs) {
+      return spacedRuns(runs).map(function (r) {
+        if (r.k === "text") return r.b ? "<strong>" + esc(r.v) + "</strong>" : esc(r.v);
         if (r.k === "br") return "<br>";
-        return '<span class="mx" data-tex="' + esc(r.latex) + '"></span>';
+        const tex = window.Mathematica && window.Mathematica.tidyTex
+          ? window.Mathematica.tidyTex(r.latex)
+          : String(r.latex || "");
+        if (/^\\bullet$/.test(tex.trim())) return '<span class="run-bullet" aria-hidden="true">•</span>';
+        const wide = tex.length > 90 || /\\text\{[^{}]{50,}\}/.test(tex) || /\\mathrm\{[^{}]{50,}\}/.test(tex);
+        return '<span class="mx' + (wide ? " mx-wide" : "") + '" data-tex="' + esc(tex) + '"></span>';
       }).join("");
     }
 
-    function card(b, kind, body) {
-      if (!b) return "";
-      return '<div class="tcard ' + kind + '" style="margin-bottom:14px">' +
-        '<div class="tcard-head" style="cursor:default">' +
-        '<span class="tcard-kind">' + kind.toUpperCase() + "</span>" +
-        '<span class="tcard-txt"><span class="tcard-num">' + b.num + "</span>" +
-        "<h4>" + esc(b.title) + "</h4></span></div>" +
-        '<div class="tcard-body" style="display:block">' +
-        (b.runs && b.runs.length
-          ? '<div class="prose">' + renderRuns(b.runs) + "</div>" : "") +
-        (body ? '<div class="prose">' + renderRuns(body.runs) + "</div>" : "") +
-        "</div></div>";
+    function partsFor(b) {
+      const kids = [];
+      if (!b) return { statement: [], solution: [], question: null };
+      /* collect the following blocks just as the reader does */
+      const sec = (ch.sections || []).filter(function (s) {
+        return (s.blocks || []).indexOf(b) >= 0;
+      })[0];
+      if (sec) {
+        const idx = sec.blocks.indexOf(b);
+        for (let i = idx + 1; i < sec.blocks.length; i++) {
+          const t = sec.blocks[i].type;
+          if (["theorem", "example", "problem", "exam", "section", "tier"].indexOf(t) >= 0) break;
+          kids.push(sec.blocks[i]);
+        }
+      }
+      const q = kids.filter(function (k) { return k.type === "question"; })[0] || null;
+      let statement = b.runs || [];
+      if (q) statement = q.runs || statement;
+      let inStatement = true;
+      const solution = [];
+      kids.forEach(function (k) {
+        if (q && k === q) return;
+        if (inStatement && (k.type === "display" || k.type === "para" || k.type === "bullet")) {
+          return; /* these lead the statement; omitted from the compact sample */
+        }
+        inStatement = false;
+        if (k.type === "solution" || k.type === "verify" || k.type === "proof" ||
+            k.type === "display" || k.type === "para" || k.type === "bullet") {
+          solution.push(k);
+        }
+      });
+      return { statement: statement, solution: solution, question: q };
     }
 
+    function sampleCard(b, kind, opts) {
+      if (!b) return "";
+      const p = partsFor(b);
+      const kindLabel = kind === "ex" ? "Worked example" : kind === "prob" ? "Problem" : "Theorem";
+      const isProof = kind === "theorem";
+      const showLabel = isProof ? "Show proof" : "Show solution";
+      const hideLabel = isProof ? "Hide proof" : "Hide solution";
+      const sol = p.solution.slice(0, 3);
+      const hasSol = opts && opts.solution && sol.length;
+      const id = "sample-" + kind;
+      return '<article class="tcard ' + kind + ' sample-card" data-show-label="' + showLabel +
+        '" data-hide-label="' + hideLabel + '">' +
+        '<header class="tcard-head">' +
+        '<span class="tcard-kind">' + kindLabel + "</span>" +
+        '<span class="tcard-num">' + esc(b.num) + "</span>" +
+        '<h4 class="tcard-title">' + esc(b.title) + "</h4></header>" +
+        '<div class="tcard-statement"><div class="prose">' + runsHTML(p.statement) + "</div></div>" +
+        (hasSol
+          ? '<div class="tcard-control"><button class="tcard-toggle" type="button" aria-expanded="false" aria-controls="' + id + '-body">' +
+            '<span class="toggle-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>' +
+            '<span class="toggle-label">' + showLabel + "</span>" +
+            '<span class="toggle-hint">' + (isProof ? "in full" : "step by step") + "</span></button></div>" +
+            '<div class="tcard-solution" id="' + id + '-body" hidden>' +
+            sol.map(function (c) {
+              if (c.type === "solution" || c.type === "verify") {
+                return '<div class="label">' + esc(c.label || "Solution") + "</div>" +
+                  '<div class="prose">' + runsHTML(c.runs) + "</div>";
+              }
+              if (c.type === "proof") {
+                return '<div class="proof"><div class="prose">' + runsHTML(c.runs) + "</div></div>";
+              }
+              if (c.type === "display") return '<div class="display">' + runsHTML(c.runs) + "</div>";
+              return '<div class="prose">' + runsHTML(c.runs) + "</div>";
+            }).join("") + "</div>"
+          : "") +
+        "</article>";
+    }
+
+    const sampleCards = [
+      { label: "Theorem", html: sampleCard(th, "theorem", { solution: true }) },
+      { label: "Worked example", html: sampleCard(ex, "ex", { solution: true }) },
+      { label: "Problem", html: sampleCard(pr, "prob", { solution: true }) }
+    ].filter(function (c) { return !!c.html; });
+
+    const secs = (ch.sections || []).slice(0, 3);
     box.innerHTML =
-      '<div class="eyebrow">Chapter 1 — a live excerpt</div>' +
-      card(th, "theorem") + card(ex, "ex") + card(pr, "prob", prBody);
+      '<div class="sample-tabs" role="tablist" aria-label="Live excerpt">' +
+      sampleCards.map(function (c, i) {
+        return '<button class="sample-tab' + (i === 1 ? " on" : "") + '" type="button" role="tab" data-sample-tab="' + i + '" aria-selected="' + (i === 1) + '">' + c.label + "</button>";
+      }).join("") +
+      "</div>" +
+      '<div class="sample-stack">' + sampleCards.map(function (c) {
+        return c.html;
+      }).join("") + "</div>" +
+      '<div class="sample-map">' +
+      '<div class="sample-map-head"><span>Chapter ' + ch.num + " · " + (ch.sections || []).length + " sections</span>" +
+      '<a href="reader.html#ch' + ch.num + '">Full chapter <span aria-hidden="true">↗</span></a></div>' +
+      '<div class="sample-map-list">' +
+      secs.map(function (s) {
+        return '<a href="reader.html#ch' + ch.num + '">' +
+          '<span class="sample-map-no">' + esc(s.num) + "</span>" +
+          '<span class="sample-map-title">' + esc(s.title) + "</span>" +
+          '<span class="sample-map-go" aria-hidden="true">→</span></a>';
+      }).join("") +
+      "</div></div>" +
+      '<div class="sample-foot"><span>One chapter. Every proof and solution in reach.</span>' +
+      '<a href="reader.html">Open the reader <span aria-hidden="true">→</span></a></div>';
     renderMath(box);
+
+    const cards = $$(".sample-card", box);
+    const tabs = $$(".sample-tab", box);
+    function selectSample(i) {
+      cards.forEach(function (card, j) { card.hidden = j !== i; });
+      tabs.forEach(function (tab, j) {
+        const on = j === i;
+        tab.classList.toggle("on", on);
+        tab.setAttribute("aria-selected", on ? "true" : "false");
+        tab.tabIndex = on ? 0 : -1;
+      });
+    }
+    selectSample(Math.min(1, cards.length - 1));
+
+    box.addEventListener("click", function (e) {
+      const tab = e.target.closest("[data-sample-tab]");
+      if (!tab) return;
+      selectSample(parseInt(tab.getAttribute("data-sample-tab"), 10));
+    });
+
+    box.addEventListener("click", function (e) {
+      const btn = e.target.closest(".tcard-toggle");
+      if (!btn) return;
+      const card = btn.closest(".tcard");
+      const body = document.getElementById(btn.getAttribute("aria-controls"));
+      if (!card || !body) return;
+      const open = body.hidden;
+      body.hidden = !open;
+      card.classList.toggle("open", open);
+      btn.setAttribute("aria-expanded", open ? "true" : "false");
+      const label = btn.querySelector(".toggle-label");
+      if (label) label.textContent = card.getAttribute(open ? "data-hide-label" : "data-show-label") ||
+        (open ? "Hide solution" : "Show solution");
+      const icon = btn.querySelector(".toggle-icon");
+      if (icon) icon.classList.toggle("is-open", open);
+      if (open) renderMath(body);
+    });
 
     if (detail) {
       detail.innerHTML =
-        '<div class="panel panel-pad" style="height:100%">' +
+        '<div class="how-panel">' +
         '<div class="eyebrow">How it works</div>' +
+        '<h3 class="how-title">A reader built for solving, not skimming.</h3>' +
         '<div class="stack" style="--gap:22px">' +
         [
-          ["book", "Theorems unfold", "Tap any theorem, worked example or problem and its proof or solution expands in place. Nothing is hidden behind a page turn."],
+          ["book", "The question stays in view", "Every problem statement is printed in full. Only the worked solution folds away — so you always know exactly what is being asked."],
           ["branch", "Four tiers of drill", "Warm-up → core applied → advanced synthesis → PhD research extensions, so the difficulty curve is explicit rather than implied."],
-          ["copy", "Copy any formula", "Every display equation is live KaTeX. Hover it and hit ⌘C to take the LaTeX with you."],
+          ["copy", "Copy any formula", "Every display equation is live KaTeX. Hover it, hit the copy button, and take the LaTeX with you."],
           ["target", "Track your progress", "Your position and completion state are stored locally, so the treatise picks up exactly where you left it."]
         ].map(function (f) {
-          return '<div style="display:flex;gap:15px;align-items:flex-start">' +
-            '<div class="feat-icon" style="width:36px;height:36px;margin:0;flex:none;border-radius:10px">' +
-            svg(ICONS[f[0]]) + "</div>" +
-            "<div><h3 style='font-size:1rem;margin-bottom:4px'>" + f[1] + "</h3>" +
-            "<p style='font-size:0.9rem;color:var(--fg-mute);margin:0;line-height:1.6'>" + f[2] + "</p></div></div>";
+          return '<div class="how-row">' +
+            '<div class="feat-icon">' + svg(ICONS[f[0]]) + "</div>" +
+            '<div><h3>' + f[1] + "</h3>" +
+            "<p>" + f[2] + "</p></div></div>";
         }).join("") +
         "</div>" +
-        '<a class="btn btn-primary" href="reader.html" style="margin-top:26px">Open the reader</a>' +
         "</div>";
     }
   }
@@ -563,8 +514,8 @@
   /* -------------------------------------------------------------- init */
   function init() {
     if (!T) return;
-    heroCanvas();
     renderStats();
+    renderHeroIndex();
     renderVolumes();
     renderFeatures();
     renderChapters();
