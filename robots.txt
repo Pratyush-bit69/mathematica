@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://pratyush-bit69.github.io/mathematica/sitemap.xml

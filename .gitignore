@@ -15,3 +15,6 @@ node_modules/
 *.swp
 .idea/
 .vscode/
+
+# netlify cli link (machine-specific)
+.netlify/
